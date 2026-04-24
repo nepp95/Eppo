@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    {
+      "name": "rmlui",
+      "version>=": "6.2"
+    }
+  ]
+}

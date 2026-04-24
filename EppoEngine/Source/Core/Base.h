@@ -1,0 +1,34 @@
+#pragma once
+
+#include <csignal>
+#include <memory>
+
+#include "Core/Log.h"
+
+namespace Eppo
+{
+	constexpr auto EP_ASSERT(const bool condition, const char* message = nullptr) -> void
+	{
+		#if defined(EP_DEBUG) || defined(EP_RELEASE)
+			if (!condition)
+			{
+				if (message)
+					Log::Error("Assertion failed: {}", message);
+				#if defined(EP_PLATFORM_WINDOWS)
+					__debugbreak();
+				#elif defined(EP_PLATFORM_LINUX)
+					raise(SIGTRAP);
+				#endif
+			}
+		#endif
+	}
+
+	template<typename T>
+	using ScopedPtr = std::unique_ptr<T>;
+
+	template<typename T, typename... Args>
+	constexpr auto CreateScopedPtr(Args&&... args) -> ScopedPtr<T>
+	{
+		return std::make_unique<T>(std::forward<Args>(args)...);
+	}
+}
