@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Panels/PanelManager.h"
+
 #include <EppoEngine.h>
 
 namespace Eppo
@@ -18,6 +20,12 @@ namespace Eppo
 		auto OnEvent(Event& e) -> void override;
 		
 	private:
+		std::shared_ptr<PanelManager> m_PanelManager = nullptr;
 		std::shared_ptr<Scene> m_ActiveScene = nullptr;
+
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
+		uint32_t m_ViewportWidth = 0;
+		uint32_t m_ViewportHeight = 0;
 	};
 }

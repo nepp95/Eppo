@@ -1,49 +1,29 @@
-include(FetchContent)
-
-# Vulkan
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan not found!")
 endif ()
 
-# RmlUi
-find_package(RmlUi REQUIRED)
+find_package(entt REQUIRED)
+if (NOT entt_FOUND)
+    message(FATAL_ERROR "entt not found!")
+endif ()
 
-# Entt
-FetchContent_Declare(
-    entt
-    GIT_REPOSITORY https://github.com/skypjack/entt.git
-    GIT_TAG v3.15.0
-)
+find_package(glm REQUIRED)
+if (NOT glm_FOUND)
+    message(FATAL_ERROR "glm not found!")
+endif ()
 
-# Glfw
-FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG 3.4
-)
+find_package(imgui REQUIRED)
+if (NOT imgui_FOUND)
+    message(FATAL_ERROR "imgui not found!")
+endif ()
 
-# Glm
-FetchContent_Declare(
-    glm
-    GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG 1.0.2
-)
-set(GLM_ENABLE_CXX_20 ON)
+find_package(nvrhi REQUIRED)
+if (NOT nvrhi_FOUND)
+    message(FATAL_ERROR "nvrhi not found!")
+endif ()
 
-# Nvrhi
-FetchContent_Declare(
-    nvrhi
-    GIT_REPOSITORY https://github.com/NVIDIA-RTX/NVRHI.git
-    GIT_TAG 54100464714de88a5a5059d25808f5ccb914ad7d # 26 February 2026
-)
-set(NVRHI_BUILD_SHARED ON)
-
-# Spdlog
-FetchContent_Declare(
-    spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.15.3
-)
-
-FetchContent_MakeAvailable(entt glfw glm nvrhi spdlog)
+find_package(spdlog REQUIRED)
+if (NOT spdlog_FOUND)
+    message(FATAL_ERROR "spdlog not found!")
+endif ()

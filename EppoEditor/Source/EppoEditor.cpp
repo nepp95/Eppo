@@ -23,7 +23,6 @@ namespace Eppo
 		};
 
 		const auto app = new Editor(std::move(params));
-		app->Init();
 
 		return app;
 	}

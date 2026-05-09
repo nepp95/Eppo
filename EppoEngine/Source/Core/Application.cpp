@@ -2,10 +2,10 @@
 #include "Core/Application.h"
 
 #include "Renderer/DeviceManager.h"
-#include "UI/UILayer.h"
+#include "ImGui/ImGuiLayer.h"
 
 #include <GLFW/glfw3.h>
-#include <nvrhi/utils.h>
+#include <imgui_impl_glfw.h>
 
 namespace Eppo
 {
@@ -29,30 +29,33 @@ namespace Eppo
 			it = m_LayerStack.erase(it);
 		}
 
+		m_DeviceManager->Shutdown();
 		m_Window->Shutdown();
 	}
 
-	auto Application::Init() -> bool
+	auto Application::Run() -> void
 	{
+		// Deferred initialization
 		// Create window
-		m_Window = CreateScopedPtr<Window>(1600, 900);
-		m_Window->Init();
+		m_Window = std::make_shared<Window>(1600, 900);
 		m_Window->SetEventCallback(
 			[this](Event& e) -> void
 			{
 				OnEvent(e);
 			}
 		);
+		
+		// Create device manager (dx11/dx12/vk)
+		DeviceParams deviceParams{
+			.API = RendererAPI::Vulkan,
+		};
+
+		m_DeviceManager = DeviceManager::Create(m_Window, deviceParams);
+		m_DeviceManager->Init();
+		m_DeviceManager->InitRenderer();
 
 		// Create UI layer
-		PushLayer<UILayer>();
-
-		return true;
-	}
-
-	auto Application::Run() -> void
-	{
-		const auto& dm = DeviceManager::Get();
+		m_ImGuiLayer = PushLayer<ImGuiLayer>();
 
 		while (m_IsRunning)
 		{
@@ -62,36 +65,28 @@ namespace Eppo
 
 			m_Window->ProcessEvents();
 
-			if (dm->BeginFrame())
+			if (!m_IsMinimized && m_DeviceManager->BeginFrame())
 			{
 				// Render work
 				for (const auto& layer : m_LayerStack)
 					layer->OnUpdate(timestep);
 
-				const auto& dm = DeviceManager::Get();
-				const auto device = dm->GetDevice();
-				nvrhi::CommandListHandle cmdList = device->createCommandList();
-
-				cmdList->open();
-				nvrhi::utils::ClearColorAttachment(cmdList, dm->GetCurrentSwapchainImage().Framebuffer, 0, nvrhi::Color(0.3f));
-				cmdList->close();
-
-				device->executeCommandList(cmdList);
-
 				// UI
+				m_ImGuiLayer->PrepareRender();
+
 				for (const auto& layer : m_LayerStack)
 					layer->OnUIRender();
 
-				// Do something UI Related here?
+				m_ImGuiLayer->Render();
 
 				// Present
-				dm->Present();
+				m_DeviceManager->Present();
 			}
 
-			dm->GetDevice()->runGarbageCollection();
+			m_DeviceManager->GetDevice()->runGarbageCollection();
 		}
 
-		dm->GetDevice()->waitForIdle();
+		m_DeviceManager->GetDevice()->waitForIdle();
 	}
 
 	auto Application::OnEvent(Event& e) -> void
@@ -129,6 +124,6 @@ namespace Eppo
 
 		m_IsMinimized = false;
 
-		return true;
+		return false;
 	}
 }

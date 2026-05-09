@@ -8,12 +8,16 @@ namespace Eppo
 {
 	auto DeviceManager::Get() -> std::shared_ptr<DeviceManager>
 	{
-		return Application::Get().GetWindow()->GetDeviceManager();
+		return Application::Get().GetDeviceManager();
 	}
 
-	auto DeviceManager::Create(const DeviceParams& params) -> std::shared_ptr<DeviceManager>
+	auto DeviceManager::Create(const std::shared_ptr<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>
 	{
 		EP_ASSERT(params.API != RendererAPI::None, "No renderer api selected!");
+		#if !defined(EP_PLATFORM_WINDOWS)
+		EP_ASSERT(params.API != RendererAPI::DX11, "DX11 renderer api selected on a non windows target!");
+		EP_ASSERT(params.API != RendererAPI::DX12, "DX12 renderer api selected on a non windows target!");
+		#endif
 
 		switch (params.API)
 		{
@@ -32,15 +36,19 @@ namespace Eppo
 			#endif
 
 			case RendererAPI::Vulkan:
-				return std::make_shared<DeviceManagerVK>(params);
+				return CreateScopedPtr<DeviceManagerVK>(window, params);
 		}
 
 		EP_ASSERT(false);
+		return nullptr;
 	}
 
-	DeviceManager::DeviceManager(const DeviceParams& params)
-		: m_Params(params)
+	auto DeviceManager::InitRenderer() -> void
 	{
-		m_MessageCallback = new NvrhiMessageCallback();
+		m_Renderer = CreateScopedPtr<Renderer>();
 	}
+
+	DeviceManager::DeviceManager(const std::shared_ptr<Window>& window, const DeviceParams& params)
+		: m_Window(window), m_Params(params)
+	{}
 }

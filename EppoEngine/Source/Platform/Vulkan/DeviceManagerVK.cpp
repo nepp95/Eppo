@@ -7,22 +7,28 @@
 
 namespace Eppo
 {
-	DeviceManagerVK::DeviceManagerVK(const DeviceParams& params)
-		: DeviceManager(params)
+	DeviceManagerVK::DeviceManagerVK(const std::shared_ptr<Window>& window, const DeviceParams& params)
+		: DeviceManager(window, params)
 	{
+		CreateVulkanInstance();
+		m_PhysicalDevice = CreateScopedPtr<PhysicalDevice>(m_Instance);
+		m_LogicalDevice = CreateScopedPtr<LogicalDevice>(m_PhysicalDevice);
+		CreateNvrhiDevice();
 	}
 
 	auto DeviceManagerVK::Init() -> void
 	{
-		CreateInstance();
-		m_PhysicalDevice = CreateScopedPtr<PhysicalDevice>(m_Instance);
-		m_LogicalDevice = CreateScopedPtr<LogicalDevice>(m_PhysicalDevice);
-		CreateNvrhiDevice();
-		m_Swapchain = CreateScopedPtr<Swapchain>();
+		VkSurfaceKHR surface = nullptr;
+		VK_CHECK(glfwCreateWindowSurface(m_Instance, m_Window->GetNative(), nullptr, &surface), "Failed to create window surface!");
+		EP_ASSERT(surface);
+
+		m_Swapchain = CreateScopedPtr<Swapchain>(surface);
+		m_Swapchain->CreateSwapchain();
 	}
 
 	auto DeviceManagerVK::Shutdown() -> void
 	{
+		m_Renderer = nullptr;
 		m_Swapchain = nullptr;
 
 		m_Device->runGarbageCollection();
@@ -56,7 +62,7 @@ namespace Eppo
 		return m_Swapchain->Present();
 	}
 
-	auto DeviceManagerVK::CreateInstance() -> void
+	auto DeviceManagerVK::CreateVulkanInstance() -> void
 	{
 		// Create instance
 		const VkApplicationInfo appInfo{
@@ -75,10 +81,13 @@ namespace Eppo
 		std::vector extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 		#if !defined(EP_DIST)
-		extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		m_Params.RequiredVulkanInstanceExtensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		#endif
 
 		for (const auto& extension : extensions)
+			m_Params.RequiredVulkanInstanceExtensions.emplace_back(extension);
+
+		for (const auto& extension : m_Params.RequiredVulkanInstanceExtensions)
 			Log::Info("Enabled instance extension '{}'", extension);
 
 		VkInstanceCreateInfo instanceInfo{
@@ -88,11 +97,11 @@ namespace Eppo
 			.pApplicationInfo = &appInfo,
 			.enabledLayerCount = 0,
 			.ppEnabledLayerNames = nullptr,
-			.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
-			.ppEnabledExtensionNames = extensions.data(),
+			.enabledExtensionCount = static_cast<uint32_t>(m_Params.RequiredVulkanInstanceExtensions.size()),
+			.ppEnabledExtensionNames = m_Params.RequiredVulkanInstanceExtensions.data(),
 		};
 
-		VkDebugUtilsMessengerCreateInfoEXT debugMessengerInfo;
+		VkDebugUtilsMessengerCreateInfoEXT debugMessengerInfo{};
 		if (g_EnableValidationLayers)
 		{
 			instanceInfo.enabledLayerCount = static_cast<uint32_t>(g_ValidationLayers.size());
@@ -124,7 +133,7 @@ namespace Eppo
 		const auto& indices = m_PhysicalDevice->GetQueueFamilyIndices();
 
 		nvrhi::vulkan::DeviceDesc deviceDesc{
-			.errorCB = m_MessageCallback,
+			.errorCB = &m_MessageCallback,
 			.instance = m_Instance,
 			.physicalDevice = m_PhysicalDevice->GetNative(),
 			.device = m_LogicalDevice->GetNative(),
@@ -134,6 +143,8 @@ namespace Eppo
 			.transferQueueIndex = indices.Transfer,
 			.computeQueue = m_LogicalDevice->GetComputeQueue(),
 			.computeQueueIndex = indices.Compute,
+			.instanceExtensions = m_Params.RequiredVulkanInstanceExtensions.data(),
+			.numInstanceExtensions = m_Params.RequiredVulkanInstanceExtensions.size(),
 		};
 
 		m_Device = nvrhi::vulkan::createDevice(deviceDesc);

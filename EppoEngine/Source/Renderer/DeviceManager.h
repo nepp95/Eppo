@@ -1,9 +1,14 @@
 #pragma once
 
+#include "Core/Window.h"
+#include "Renderer/Renderer.h"
+
 #include <nvrhi/nvrhi.h>
 
 namespace Eppo
 {
+	class DeviceManagerVK;
+
 	enum class RendererAPI
 	{
 		None,
@@ -12,7 +17,7 @@ namespace Eppo
 		Vulkan,
 	};
 
-	struct NvrhiMessageCallback : nvrhi::IMessageCallback
+	struct NvrhiMessageCallback final : nvrhi::IMessageCallback
 	{
 		auto message(const nvrhi::MessageSeverity severity, const char* messageText) -> void override
 		{
@@ -56,35 +61,62 @@ namespace Eppo
 	struct DeviceParams
 	{
 		RendererAPI API = RendererAPI::Vulkan;
+
+		nvrhi::Format SwapchainFormat = nvrhi::Format::RGBA8_UNORM;
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
+		uint32_t MaxFramesInFlight = 2;
+		uint32_t SwapchainImageCount = 3;
+
+		bool StartMaximized = false;
+		bool StartFullscreen = false;
+		bool Decorated = true;
+
+		bool EnableComputeQueue = true;
+		bool EnableTransferQueue = false;
+
+		#if defined(EP_HAS_VULKAN)
+		std::vector<const char *> RequiredVulkanInstanceExtensions;
+		#endif
 	};
 
 	class DeviceManager
 	{
 	public:
+		DeviceManager(const DeviceManager&) = delete;
+		DeviceManager& operator=(const DeviceManager&) = delete;
 		virtual ~DeviceManager() = default;
 
+		// Lifecycle
+		[[nodiscard]] static auto Create(const std::shared_ptr<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>;
 		virtual auto Init() -> void = 0;
 		virtual auto Shutdown() -> void = 0;
 
-		virtual auto GetDevice() const -> nvrhi::IDevice* = 0;
-
+		// Frame
 		virtual auto BeginFrame() -> bool = 0;
 		virtual auto Present() -> bool = 0;
 
-		virtual auto GetCurrentBackBufferIndex() const -> uint32_t = 0;
-		virtual auto GetCurrentSwapchainImage() -> const SwapchainImage& = 0;
+		// Renderer
+		auto InitRenderer() -> void;
+		[[nodiscard]] constexpr auto GetRenderer() const -> const ScopedPtr<Renderer>& { return m_Renderer; }
 
+		// Swapchain/Nvrhi device
+		virtual auto GetCurrentBackBufferIndex() const -> uint32_t = 0;
+		virtual auto GetCurrentSwapchainImage() -> const SwapchainImage & = 0;
+		virtual auto GetDevice() const -> nvrhi::IDevice* = 0;
+
+		// Device Manager
+		[[nodiscard]] auto GetParams() -> const DeviceParams& { return m_Params; }
 		static auto Get() -> std::shared_ptr<DeviceManager>;
-		static auto Create(const DeviceParams& params) -> std::shared_ptr<DeviceManager>;
 
 	protected:
-		DeviceManager(const DeviceParams& params);
+		DeviceManager(const std::shared_ptr<Window>& window, const DeviceParams& params);
 
 	protected:
 		DeviceParams m_Params;
+		ScopedPtr<Renderer> m_Renderer = nullptr;
+		std::shared_ptr<Window> m_Window = nullptr;
 
-		nvrhi::IMessageCallback* m_MessageCallback = nullptr;
+		NvrhiMessageCallback m_MessageCallback;
 	};
 }

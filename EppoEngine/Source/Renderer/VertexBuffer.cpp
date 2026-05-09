@@ -25,6 +25,14 @@ namespace Eppo
 		const nvrhi::DeviceHandle device = DeviceManager::Get()->GetDevice();
 		const nvrhi::CommandListHandle cmdList = device->createCommandList();
 
+		if (size > m_Size)
+		{
+			m_Size = size;
+			CreateBuffer();
+		}
+		else
+			m_Size = size;
+
 		cmdList->open();
 		cmdList->writeBuffer(m_Buffer, data, size, offset);
 		cmdList->close();
@@ -36,11 +44,13 @@ namespace Eppo
 	{
 		const nvrhi::DeviceHandle device = DeviceManager::Get()->GetDevice();
 
-		auto bufferDesc = nvrhi::BufferDesc()
-			.setByteSize(m_Size)
-			.setDebugName("VertexBuffer")
-			.setIsVertexBuffer(true)
-			.enableAutomaticStateTracking(nvrhi::ResourceStates::VertexBuffer);
+		nvrhi::BufferDesc bufferDesc{
+			.byteSize = m_Size,
+			.debugName = "VertexBuffer",
+			.isIndexBuffer = true,
+			.initialState = nvrhi::ResourceStates::VertexBuffer,
+			.keepInitialState = true,
+		};
 
 		m_Buffer = device->createBuffer(bufferDesc);
 	}

@@ -3,6 +3,8 @@
 #include "Core/Layer.h"
 #include "Core/Window.h"
 #include "Event/ApplicationEvent.h"
+#include "ImGui/ImGuiLayer.h"
+#include "Renderer/DeviceManager.h"
 
 auto main(int argc, char** argv) -> int;
 
@@ -41,7 +43,6 @@ namespace Eppo
 		Application(ApplicationParams&& params);
 		virtual ~Application();
 
-		auto Init() -> bool;
 		auto Close() -> void { m_IsRunning = false; }
 
 		auto Run() -> void;
@@ -58,7 +59,9 @@ namespace Eppo
 		}
 
 		[[nodiscard]] constexpr auto GetParams() const -> const ApplicationParams& { return m_Params; }
-		[[nodiscard]] constexpr auto GetWindow() const -> const ScopedPtr<Window>& { return m_Window; }
+		[[nodiscard]] constexpr auto GetWindow() const -> const std::shared_ptr<Window>& { return m_Window; }
+		[[nodiscard]] constexpr auto GetDeviceManager() const -> const std::shared_ptr<DeviceManager>& { return m_DeviceManager; }
+		[[nodiscard]] constexpr auto GetImGuiLayer() const -> const std::shared_ptr<ImGuiLayer>& { return m_ImGuiLayer; }
 
 		static auto Get() -> Application& { return *s_Instance; }
 
@@ -70,8 +73,11 @@ namespace Eppo
 		auto OnWindowResize(const WindowResizeEvent& e) -> bool;
 
 	private:
-		ScopedPtr<Window> m_Window = nullptr;
+		std::shared_ptr<Window> m_Window = nullptr;
+		std::shared_ptr<DeviceManager> m_DeviceManager = nullptr;
+
 		std::vector<std::shared_ptr<Layer>> m_LayerStack;
+		std::shared_ptr<ImGuiLayer> m_ImGuiLayer = nullptr;
 
 		float m_LastFrameTime = 0.0f;
 		bool m_IsRunning = true;

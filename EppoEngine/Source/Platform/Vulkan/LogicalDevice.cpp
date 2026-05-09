@@ -32,8 +32,14 @@ namespace Eppo
 		// Create device
 		const auto& deviceFeatures = physicalDevice->GetDeviceFeatures();
 
+		VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+			.dynamicRendering = VK_TRUE,
+		};
+
 		VkPhysicalDeviceSynchronization2Features synchronizationFeatures{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+			.pNext = &dynamicRenderingFeatures,
 			.synchronization2 = VK_TRUE,
 		};
 

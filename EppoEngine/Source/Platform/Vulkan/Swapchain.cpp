@@ -9,14 +9,11 @@
 
 namespace Eppo
 {
-	Swapchain::Swapchain()
+	Swapchain::Swapchain(VkSurfaceKHR surface)
+		: m_Surface(surface)
 	{
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 		VkDevice device = dm->GetLogicalDevice()->GetNative();
-
-		// Create window surface
-		VK_CHECK(glfwCreateWindowSurface(dm->GetVulkanInstance(), Application::Get().GetWindow()->GetNative(), nullptr, &m_Surface), "Failed to create window surface!");
-		EP_ASSERT(m_Surface);
 
 		// Get swapchain support details
 		auto [capabilities, formats, presentModes] = QuerySwapchainSupportDetails();
@@ -25,75 +22,13 @@ namespace Eppo
 		m_Format = m_SurfaceFormat.format;
 		m_Extent = SelectExtent(capabilities);
 
-		const auto& indices = dm->GetPhysicalDevice()->GetQueueFamilyIndices();
-
-		VkSwapchainCreateInfoKHR swapchainInfo{
-			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-			.surface = m_Surface,
-			.minImageCount = capabilities.minImageCount,
-			.imageFormat = m_Format,
-			.imageColorSpace = m_SurfaceFormat.colorSpace,
-			.imageExtent = m_Extent,
-			.imageArrayLayers = 1,
-			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-			.imageSharingMode = indices.Graphics == indices.Present ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-			.queueFamilyIndexCount = 0,
-			.pQueueFamilyIndices = nullptr,
-			.preTransform = capabilities.currentTransform,
-			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-			.presentMode = m_PresentMode,
-			.clipped = VK_TRUE,
-			.oldSwapchain = nullptr,
-		};
-
-		VK_CHECK(vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &m_Swapchain), "Failed to create swapchain!");
-		EP_ASSERT(m_Swapchain);
-
-		// Get swapchain images
-		uint32_t swapchainImageCount = 0;
-		VK_CHECK(vkGetSwapchainImagesKHR(device, m_Swapchain, &swapchainImageCount, nullptr), "Failed to get swapchain images!");
-		EP_ASSERT(swapchainImageCount >= 2);
-		m_PresentSemaphores.resize(swapchainImageCount);
-		
-		std::vector<VkImage> images(swapchainImageCount);
-		VK_CHECK(vkGetSwapchainImagesKHR(device, m_Swapchain, &swapchainImageCount, images.data()), "Failed to get swapchain images!");
-
+		// Create acquire semaphores
 		VkSemaphoreCreateInfo semaphoreInfo{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 		};
 
-		for (uint32_t i = 0; i < swapchainImageCount; i++)
-		{
-			// Create image views
-			auto& image = m_Images.emplace_back();
-			image.NativeImage = images.at(i);
-
-			auto textureDesc = nvrhi::TextureDesc()
-				.setDimension(nvrhi::TextureDimension::Texture2D)
-				.setFormat(nvrhi::Format::SRGBA8_UNORM)
-				.setWidth(m_Extent.width)
-				.setHeight(m_Extent.height)
-				.setIsRenderTarget(true)
-				.setInitialState(nvrhi::ResourceStates::Present)
-				.setKeepInitialState(true)
-				.setDebugName(std::format("Swapchain Image {}", i));
-
-			image.Texture = dm->GetDevice()->createHandleForNativeTexture(nvrhi::ObjectTypes::VK_Image, nvrhi::Object(image.NativeImage), textureDesc);
-			
-			auto framebufferDesc = nvrhi::FramebufferDesc()
-				.addColorAttachment(image.Texture);
-
-			image.Framebuffer = dm->GetDevice()->createFramebuffer(framebufferDesc);
-
-			// Create present semaphores
-			VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_PresentSemaphores[i]), "Failed to create semaphore!");
-		}
-
-		// Create acquire semaphores
 		for (uint32_t i = 0; i < g_MaxFramesInFlight; i++)
-		{
 			VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_AcquireSemaphores[i]), "Failed to create semaphore!");
-		}
 	}
 
 	Swapchain::~Swapchain()
@@ -103,13 +38,9 @@ namespace Eppo
 
 		m_Images.clear();
 
-		for (size_t i = 0; i < m_PresentSemaphores.size(); i++)
-			vkDestroySemaphore(device, m_PresentSemaphores.at(i), nullptr);
-
 		for (uint32_t i = 0; i < g_MaxFramesInFlight; i++)
 			vkDestroySemaphore(device, m_AcquireSemaphores.at(i), nullptr);
 
-		vkDestroySwapchainKHR(device, m_Swapchain, nullptr);
 		vkDestroySurfaceKHR(dm->GetVulkanInstance(), m_Surface, nullptr);
 	}
 
@@ -129,8 +60,8 @@ namespace Eppo
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
-				// Resize backbuffer
 				// Resize swapchain
+				CreateSwapchain();
 			}
 			else
 			{
@@ -142,7 +73,8 @@ namespace Eppo
 
 		if (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
 		{
-			dm->m_Device->queueWaitForSemaphore(nvrhi::CommandQueue::Graphics, semaphore, 0);
+			nvrhi::vulkan::IDevice* vkNvrhiDevice(dm->GetDevice()->getNativeObject(nvrhi::ObjectTypes::Nvrhi_VK_Device));
+			vkNvrhiDevice->queueWaitForSemaphore(nvrhi::CommandQueue::Graphics, semaphore, 0);
 			return true;
 		}
 		
@@ -152,13 +84,13 @@ namespace Eppo
 	auto Swapchain::Present() -> bool
 	{
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
-		nvrhi::vulkan::DeviceHandle nvrhiDevice = dm->m_Device;
 		VkDevice device = dm->GetLogicalDevice()->GetNative();
+		nvrhi::vulkan::IDevice* vkNvrhiDevice(dm->GetDevice()->getNativeObject(nvrhi::ObjectTypes::Nvrhi_VK_Device));
 
 		const auto& semaphore = m_PresentSemaphores.at(m_SwapchainIndex);
 
-		nvrhiDevice->queueSignalSemaphore(nvrhi::CommandQueue::Graphics, semaphore, 0);
-		nvrhiDevice->executeCommandLists(nullptr, 0);
+		vkNvrhiDevice->queueSignalSemaphore(nvrhi::CommandQueue::Graphics, semaphore, 0);
+		vkNvrhiDevice->executeCommandLists(nullptr, 0);
 
 		VkPresentInfoKHR presentInfo{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -181,7 +113,7 @@ namespace Eppo
 			auto query = m_FramesInFlight.front();
 			m_FramesInFlight.pop();
 
-			nvrhiDevice->waitEventQuery(query);
+			vkNvrhiDevice->waitEventQuery(query);
 			m_QueryPool.emplace_back(query);
 		}
 
@@ -193,14 +125,105 @@ namespace Eppo
 		}
 		else
 		{
-			query = nvrhiDevice->createEventQuery();
+			query = vkNvrhiDevice->createEventQuery();
 		}
 
-		nvrhiDevice->resetEventQuery(query);
-		nvrhiDevice->setEventQuery(query, nvrhi::CommandQueue::Graphics);
+		vkNvrhiDevice->resetEventQuery(query);
+		vkNvrhiDevice->setEventQuery(query, nvrhi::CommandQueue::Graphics);
 		m_FramesInFlight.push(query);
 
 		return true;
+	}
+
+	auto Swapchain::CreateSwapchain(uint32_t width, uint32_t height) -> void
+	{
+		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
+		VkDevice device = dm->GetLogicalDevice()->GetNative();
+
+		m_Images.clear();
+
+		auto [capabilities, formats, presentModes] = QuerySwapchainSupportDetails();
+		const auto& indices = dm->GetPhysicalDevice()->GetQueueFamilyIndices();
+		VkSwapchainKHR oldSwapchain = m_Swapchain ? m_Swapchain : nullptr;
+
+		if (width == 0 || height == 0)
+			m_Extent = SelectExtent(capabilities);
+		else
+			m_Extent = { width, height };
+
+		VkSwapchainCreateInfoKHR swapchainInfo{
+			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+			.surface = m_Surface,
+			.minImageCount = capabilities.minImageCount,
+			.imageFormat = m_Format,
+			.imageColorSpace = m_SurfaceFormat.colorSpace,
+			.imageExtent = m_Extent,
+			.imageArrayLayers = 1,
+			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+			.imageSharingMode = indices.Graphics == indices.Present ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+			.queueFamilyIndexCount = 0,
+			.pQueueFamilyIndices = nullptr,
+			.preTransform = capabilities.currentTransform,
+			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+			.presentMode = m_PresentMode,
+			.clipped = VK_TRUE,
+			.oldSwapchain = oldSwapchain,
+		};
+
+		VK_CHECK(vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &m_Swapchain), "Failed to create swapchain!");
+		EP_ASSERT(m_Swapchain);
+
+		if (oldSwapchain)
+			vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
+
+		uint32_t swapchainImageCount = 0;
+		VK_CHECK(vkGetSwapchainImagesKHR(device, m_Swapchain, &swapchainImageCount, nullptr), "Failed to get swapchain images!");
+		EP_ASSERT(swapchainImageCount >= 2);
+		m_PresentSemaphores.resize(swapchainImageCount);
+
+		std::vector<VkImage> images(swapchainImageCount);
+		VK_CHECK(vkGetSwapchainImagesKHR(device, m_Swapchain, &swapchainImageCount, images.data()), "Failed to get swapchain images!");
+
+		constexpr VkSemaphoreCreateInfo semaphoreInfo{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		};
+
+		for (uint32_t i = 0; i < swapchainImageCount; i++)
+		{
+			// Create image views
+			auto& image = m_Images.emplace_back();
+			image.NativeImage = images.at(i);
+
+			nvrhi::TextureDesc textureDesc{
+				.width = m_Extent.width,
+				.height = m_Extent.height,
+				.format = nvrhi::Format::RGBA8_UNORM,
+				.dimension = nvrhi::TextureDimension::Texture2D,
+				.debugName = std::format("Swapchain Image {}", i),
+				.isRenderTarget = true,
+				.initialState = nvrhi::ResourceStates::Present,
+				.keepInitialState = true,
+			};
+
+			image.Texture = dm->GetDevice()->createHandleForNativeTexture(nvrhi::ObjectTypes::VK_Image, nvrhi::Object(image.NativeImage), textureDesc);
+
+			nvrhi::FramebufferDesc framebufferDesc{};
+			framebufferDesc.addColorAttachment(image.Texture);
+
+			image.Framebuffer = dm->GetDevice()->createFramebuffer(framebufferDesc);
+
+			// Create present semaphores
+			VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_PresentSemaphores[i]), "Failed to create semaphore!");
+		}
+	}
+
+	auto Swapchain::Resize(uint32_t width, uint32_t height) -> void
+	{
+		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
+		VkDevice device = dm->GetLogicalDevice()->GetNative();
+
+		vkDeviceWaitIdle(device);
+		CreateSwapchain(width, height);
 	}
 
 	auto Swapchain::QuerySwapchainSupportDetails() const -> SwapchainSupportDetails
@@ -259,7 +282,7 @@ namespace Eppo
 
 		for (const auto& format : surfaceFormats)
 		{
-			if (format.format == VK_FORMAT_R8G8B8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			if (format.format == VK_FORMAT_R8G8B8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
 				surfaceFormat = format;
 				break;

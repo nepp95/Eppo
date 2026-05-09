@@ -5,7 +5,6 @@ project(EppoEngine LANGUAGES C CXX)
 # Compiler flags
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (MSVC)
     add_compile_options("/MP")
@@ -21,6 +20,7 @@ option(BUILD_RUNTIME "Build runtime" ON)
 
 # Get dependencies
 include(CMake/Dependencies.cmake)
+include(CMake/CompileShader.cmake)
 
 # Targets
 add_subdirectory(EppoEngine)

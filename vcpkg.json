@@ -1,8 +1,32 @@
 {
+  "builtin-baseline": "89dd0f4d241136b843fb55813b2f0fa6448c204d",
   "dependencies": [
     {
-      "name": "rmlui",
-      "version>=": "6.2"
+      "name": "entt",
+      "version>=": "3.16.0"
+    },
+    {
+      "name": "glm",
+      "version>=": "1.0.3"
+    },
+    {
+      "name": "imgui",
+      "version>=": "1.92.7",
+      "features": [
+        "docking-experimental",
+        "glfw-binding"
+      ]
+    },
+    {
+      "name": "nvrhi",
+      "version>=": "2026-02-26"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.15.3",
+      "features": [
+        "fmt"
+      ]
     }
   ]
 }

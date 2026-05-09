@@ -15,8 +15,7 @@ namespace Eppo
 	protected:
 		KeyEvent(const KeyCode keyCode)
 			: m_KeyCode(keyCode)
-		{
-		}
+		{}
 
 	protected:
 		KeyCode m_KeyCode;
@@ -27,8 +26,7 @@ namespace Eppo
 	public:
 		KeyPressedEvent(const KeyCode keyCode, const bool isRepeat = false)
 			: KeyEvent(keyCode), m_IsRepeat(isRepeat)
-		{
-		}
+		{}
 
 		[[nodiscard]] auto IsRepeat() const -> bool { return m_IsRepeat; }
 

@@ -15,7 +15,7 @@ namespace Eppo
 	class DeviceManagerVK : public DeviceManager
 	{
 	public:
-		DeviceManagerVK(const DeviceParams& params);
+		DeviceManagerVK(const std::shared_ptr<Window>& window, const DeviceParams& params);
 		virtual ~DeviceManagerVK() = default;
 
 		auto Init() -> void override;
@@ -35,20 +35,18 @@ namespace Eppo
 		[[nodiscard]] constexpr auto GetSwapchain() const -> const ScopedPtr<Swapchain>& { return m_Swapchain; }
 
 	private:
-		auto CreateInstance() -> void;
+		auto CreateVulkanInstance() -> void;
 		auto CreateNvrhiDevice() -> void;
 
 	private:
+		nvrhi::vulkan::DeviceHandle m_Device = nullptr;
+		nvrhi::DeviceHandle m_ValidationLayer = nullptr;
+
 		VkInstance m_Instance = nullptr;
 		VkDebugUtilsMessengerEXT m_DebugMessenger = nullptr;
 
 		ScopedPtr<PhysicalDevice> m_PhysicalDevice = nullptr;
 		ScopedPtr<LogicalDevice> m_LogicalDevice = nullptr;
 		ScopedPtr<Swapchain> m_Swapchain = nullptr;
-
-		nvrhi::vulkan::DeviceHandle m_Device = nullptr;
-		nvrhi::DeviceHandle m_ValidationLayer = nullptr;
-
-		friend class Swapchain;
 	};
 }

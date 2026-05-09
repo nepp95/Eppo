@@ -15,11 +15,14 @@ namespace Eppo
 	class Swapchain
 	{
 	public:
-		Swapchain();
+		Swapchain(VkSurfaceKHR surface);
 		~Swapchain();
 
 		auto BeginFrame() -> bool;
 		auto Present() -> bool;
+
+		auto CreateSwapchain(uint32_t width = 0, uint32_t height = 0) -> void;
+		auto Resize(uint32_t width, uint32_t height) -> void;
 
 		auto GetCurrentBackBufferIndex() const -> uint32_t { return m_SwapchainIndex; }
 		auto GetCurrentSwapchainImage() -> const SwapchainImage& { return m_Images.at(m_SwapchainIndex); }

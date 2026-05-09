@@ -1,0 +1,19 @@
+#pragma once
+
+#include "Renderer/Shader.h"
+
+namespace Eppo
+{
+	class ShaderLibrary
+	{
+	public:
+		ShaderLibrary() = default;
+		~ShaderLibrary() = default;
+
+		auto Load(const std::string& name) -> void;
+		[[nodiscard]] auto Get(const std::string& name) const -> const std::shared_ptr<Shader>&;
+
+	private:
+		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+	};
+}

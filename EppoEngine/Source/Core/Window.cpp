@@ -3,6 +3,7 @@
 
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
+#include "Event/MouseEvent.h"
 
 #include <GLFW/glfw3.h>
 
@@ -90,21 +91,49 @@ namespace Eppo
 				callback(e);
 			}
 		);
-	}
 
-	auto Window::Init() -> void
-	{
-		// Create device manager (dx11/dx12/vk)
-		DeviceParams deviceParams{};
+		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods) -> void
+			{
+				const EventCallbackFn& callback = *static_cast<EventCallbackFn*>(glfwGetWindowUserPointer(window));
 
-		m_DeviceManager = DeviceManager::Create(deviceParams);
-		m_DeviceManager->Init();
+				switch (action)
+				{
+					case GLFW_PRESS:
+					{
+						MouseButtonPressedEvent e(button);
+						callback(e);
+						break;
+					}
+
+					case GLFW_RELEASE:
+					{
+						MouseButtonReleasedEvent e(button);
+						callback(e);
+						break;
+					}
+				}
+			}
+		);
+
+		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset) -> void
+			{
+				const EventCallbackFn& callback = *static_cast<EventCallbackFn*>(glfwGetWindowUserPointer(window));
+				MouseScrolledEvent e(static_cast<float>(xOffset), static_cast<float>(yOffset));
+				callback(e);
+			}
+		);
+
+		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos) -> void
+			{
+				const EventCallbackFn& callback = *static_cast<EventCallbackFn*>(glfwGetWindowUserPointer(window));
+				MouseMovedEvent e(static_cast<float>(xPos), static_cast<float>(yPos));
+				callback(e);
+			}
+		);
 	}
 
 	auto Window::Shutdown() -> void
 	{
-		m_DeviceManager->Shutdown();
-
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}

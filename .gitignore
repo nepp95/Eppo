@@ -3,5 +3,6 @@
 .vs
 .vscode
 
-# Build
+# Build / Cache
 /build
+/EppoEditor/Resources/Shaders/Bin
