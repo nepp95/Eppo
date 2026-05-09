@@ -95,6 +95,7 @@ namespace Eppo
 		// Frame
 		virtual auto BeginFrame() -> bool = 0;
 		virtual auto Present() -> bool = 0;
+		auto WaitIdle() const -> bool;
 
 		// Renderer
 		auto InitRenderer() -> void;

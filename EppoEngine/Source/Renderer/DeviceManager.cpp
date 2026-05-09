@@ -43,6 +43,11 @@ namespace Eppo
 		return nullptr;
 	}
 
+	auto DeviceManager::WaitIdle() const -> bool
+	{
+		return GetDevice()->waitForIdle();
+	}
+
 	auto DeviceManager::InitRenderer() -> void
 	{
 		m_Renderer = CreateScopedPtr<Renderer>();

@@ -38,9 +38,13 @@ namespace Eppo
 
 		m_Images.clear();
 
-		for (uint32_t i = 0; i < g_MaxFramesInFlight; i++)
+		for (size_t i = 0; i < m_PresentSemaphores.size(); i++)
+			vkDestroySemaphore(device, m_PresentSemaphores.at(i), nullptr);
+
+		for (size_t i = 0; i < m_AcquireSemaphores.size(); i++)
 			vkDestroySemaphore(device, m_AcquireSemaphores.at(i), nullptr);
 
+		vkDestroySwapchainKHR(device, m_Swapchain, nullptr);
 		vkDestroySurfaceKHR(dm->GetVulkanInstance(), m_Surface, nullptr);
 	}
 
@@ -222,7 +226,7 @@ namespace Eppo
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 		VkDevice device = dm->GetLogicalDevice()->GetNative();
 
-		vkDeviceWaitIdle(device);
+		dm->GetDevice()->waitForIdle();
 		CreateSwapchain(width, height);
 	}
 

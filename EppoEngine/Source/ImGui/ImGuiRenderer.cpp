@@ -190,9 +190,9 @@ namespace Eppo
 		} pushConstants{};
 
 		pushConstants.Scale.x = 2.0f / drawData->DisplaySize.x;
-		pushConstants.Scale.y = 2.0f / drawData->DisplaySize.y;
+		pushConstants.Scale.y = -2.0f / drawData->DisplaySize.y;
 		pushConstants.Translate.x = -1.0f - drawData->DisplayPos.x * pushConstants.Scale.x;
-		pushConstants.Translate.y = -1.0f - drawData->DisplayPos.y * pushConstants.Scale.y;
+		pushConstants.Translate.y = 1.0f - drawData->DisplayPos.y * pushConstants.Scale.y;
 
 		float fbWidth = drawData->DisplaySize.x * drawData->FramebufferScale.x;
 		float fbHeight = drawData->DisplaySize.y * drawData->FramebufferScale.y;

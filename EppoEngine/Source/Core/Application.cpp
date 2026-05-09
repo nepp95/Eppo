@@ -22,6 +22,8 @@ namespace Eppo
 	{
 		Log::Info("Application shutting down...");
 
+		m_ImGuiLayer.reset();
+
 		for (auto it = m_LayerStack.begin(); it != m_LayerStack.end();)
 		{
 			std::shared_ptr layer = *it;

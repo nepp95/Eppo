@@ -65,7 +65,7 @@ namespace Eppo
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		const float minWinSizeX = style.WindowMinSize.x;
-		style.WindowMinSize.x = 370.0f;
+		style.WindowMinSize.x = 200.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			const ImGuiID dockspaceId = ImGui::GetID("MyDockSpace");

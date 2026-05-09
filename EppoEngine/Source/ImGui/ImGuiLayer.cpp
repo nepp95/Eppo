@@ -63,6 +63,8 @@ namespace Eppo
 
 	auto ImGuiLayer::OnDetach() -> void
 	{
+		ImGui::DestroyPlatformWindows();
+		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
@@ -130,7 +132,7 @@ namespace Eppo
 
 		VkSurfaceKHR surface = nullptr;
 		VkInstance instance = dm->GetVulkanInstance();
-		VK_CHECK(platformIO.Platform_CreateVkSurface(viewport, *reinterpret_cast<ImU64*>(instance), nullptr, reinterpret_cast<ImU64*>(surface)), "Failed to create vk surface for ImGui!");
+		VK_CHECK(platformIO.Platform_CreateVkSurface(viewport, reinterpret_cast<ImU64>(instance), nullptr, reinterpret_cast<ImU64*>(&surface)), "Failed to create vk surface for ImGui!");
 		
 		data->Swapchain = CreateScopedPtr<Swapchain>(surface);
 		data->Swapchain->CreateSwapchain(static_cast<uint32_t>(viewport->Size.x), static_cast<uint32_t>(viewport->Size.y));
@@ -141,7 +143,7 @@ namespace Eppo
 	auto ImGuiLayer::ImGuiRenderer_DestroyWindow(ImGuiViewport* viewport) -> void
 	{
 		ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
-		delete vd;
+		IM_DELETE(vd);
 		viewport->RendererUserData = nullptr;
 	}
 
