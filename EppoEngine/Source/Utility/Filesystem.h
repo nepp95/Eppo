@@ -13,6 +13,11 @@ namespace Eppo::FS
 	{
 		return GetRootDirectory() / "Resources";
 	}
+	
+	inline auto GetShaderCacheDirectory() -> std::filesystem::path
+	{
+		return GetResourcesDirectory() / "Shaders" / "Cache";
+	}
 
 	inline auto CreateDirectory(const std::filesystem::path& path) -> bool
 	{
@@ -70,5 +75,30 @@ namespace Eppo::FS
 		in.read(bytes.data(), fileSize);
 
 		return bytes;
+	}
+
+	inline auto ReadText(const std::filesystem::path& path) -> std::string
+	{
+		// Open file stream
+		std::ifstream in(path, std::ios::binary);
+		if (!in)
+		{
+			Log::Error("Failed to open file stream for path '{}'", path);
+			return {};
+		}
+
+		// Get file size
+		const auto fileSize = std::filesystem::file_size(path);
+		if (fileSize == 0)
+		{
+			Log::Error("Failed to read text because file size was zero for path '{}'", path);
+			return {};
+		}
+
+		std::string text;
+		text.resize(fileSize);
+		in.read(text.data(), text.size());
+
+		return text;
 	}
 }

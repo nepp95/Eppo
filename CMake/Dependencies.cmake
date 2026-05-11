@@ -1,10 +1,10 @@
-find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+find_package(Vulkan REQUIRED COMPONENTS dxc)
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Vulkan not found!")
 endif ()
 
-find_package(entt REQUIRED)
-if (NOT entt_FOUND)
+find_package(EnTT REQUIRED)
+if (NOT EnTT_FOUND)
     message(FATAL_ERROR "entt not found!")
 endif ()
 

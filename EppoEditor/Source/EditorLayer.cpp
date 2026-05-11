@@ -10,23 +10,18 @@ namespace Eppo
 		constexpr const char* CONTENT_BROWSER_PANEL = "Content Browser";
 	}
 
-	EditorLayer::EditorLayer()
+	auto EditorLayer::OnAttach() -> void
 	{
 		m_PanelManager = std::make_shared<PanelManager>();
 		m_PanelManager->AddPanel<SceneHierarchyPanel>(SCENE_HIERARCHY_PANEL, true);
 		//m_PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL, true);
 
+		m_EditorCamera = CreateScopedPtr<EditorCamera>(glm::vec3(-10.0f, 1.0f, 0.0f), 0.0f, 0.0f);
+
 		m_ActiveScene = std::make_shared<Scene>();
 		m_ActiveScene->CreateEntity("Test");
-	}
 
-	EditorLayer::~EditorLayer()
-	{
-
-	}
-
-	auto EditorLayer::OnAttach() -> void
-	{
+		m_SceneRenderer = std::make_shared<SceneRenderer>(m_ActiveScene);
 	}
 
 	auto EditorLayer::OnDetach() -> void
@@ -35,7 +30,30 @@ namespace Eppo
 
 	auto EditorLayer::OnUpdate(float timestep) -> void
 	{
+		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+		{
+			m_EditorCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			m_ActiveScene->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			m_EditorScene->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			m_SceneRenderer->Resize(m_ViewportWidth, m_ViewportHeight);
+		}
 
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				m_EditorCamera->OnUpdate(timestep);
+				m_ActiveScene->OnRenderEditor(m_SceneRenderer, m_EditorCamera);
+				break;
+			}
+
+			case SceneState::Play:
+			{
+				m_ActiveScene->OnUpdateRuntime(timestep);
+				m_ActiveScene->OnRenderRuntime(m_SceneRenderer);
+				break;
+			}
+		}
 	}
 
 	auto EditorLayer::OnUIRender() -> void

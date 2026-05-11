@@ -1,20 +1,20 @@
+struct VSInput
+{
+    float2 Position : POSITION0;
+    float2 UV : TEXCOORD0;
+    float4 Color : COLOR0;
+};
+
 struct PushConstants
 {
     float2 Scale;
     float2 Translate;
 };
-[[vk::push_constant]] ConstantBuffer<PushConstants> uPC : register(b0, space0);
-
-struct VSInput
-{
-    float2 Position : POSITION;
-    float2 UV : TEXCOORD0;
-    float4 Color : COLOR0;
-};
+[[vk::push_constant]] PushConstants uPC;
 
 struct VSOutput
 {
-    float4 Position : SV_POSITION;
+    float4 Position : SV_Position;
     float2 UV : TEXCOORD0;
     float4 Color : COLOR0;
 };
@@ -22,7 +22,6 @@ struct VSOutput
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
-    
     output.Position.xy = input.Position.xy * uPC.Scale + uPC.Translate;
     output.Position.zw = float2(0, 1);
     output.UV = input.UV;

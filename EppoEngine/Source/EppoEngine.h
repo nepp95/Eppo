@@ -3,6 +3,7 @@
 #include "Core/Base.h"
 
 #include "Core/Application.h"
+#include "Core/Input.h"
 #include "Core/KeyCodes.h"
 #include "Core/Layer.h"
 #include "Core/MouseCodes.h"
@@ -10,6 +11,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 
+#include "Renderer/Camera/EditorCamera.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/SceneRenderer.h"
 

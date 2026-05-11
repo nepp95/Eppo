@@ -20,5 +20,6 @@
 #include <vector>
 
 #include "Core/Base.h"
+#include "Core/Hash.h"
 #include "Utility/Filesystem.h"
 #include "Utility/Random.h"

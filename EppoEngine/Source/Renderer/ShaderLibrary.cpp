@@ -8,7 +8,11 @@ namespace Eppo
 		if (m_Shaders.contains(name))
 			Log::Warn("Shader with name '{}' already exists, reloading shader!", name);
 	
-		m_Shaders[name] = std::make_shared<Shader>(name);
+		const ShaderSpecification shaderSpec{
+			.Name = name,
+		};
+
+		m_Shaders[name] = std::make_shared<Shader>(shaderSpec);
 	}
 
 	auto ShaderLibrary::Get(const std::string& name) const -> const std::shared_ptr<Shader>&

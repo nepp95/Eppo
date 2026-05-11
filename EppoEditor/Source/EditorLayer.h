@@ -9,9 +9,6 @@ namespace Eppo
 	class EditorLayer : public Layer
 	{
 	public:
-		EditorLayer();
-		~EditorLayer() override;
-
 		auto OnAttach() -> void override;
 		auto OnDetach() -> void override;
 
@@ -21,11 +18,22 @@ namespace Eppo
 		
 	private:
 		std::shared_ptr<PanelManager> m_PanelManager = nullptr;
+
 		std::shared_ptr<Scene> m_ActiveScene = nullptr;
+		std::shared_ptr<Scene> m_EditorScene = nullptr;
+		std::shared_ptr<SceneRenderer> m_SceneRenderer = nullptr;
+
+		ScopedPtr<EditorCamera> m_EditorCamera = nullptr;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+
+		enum class SceneState
+		{
+			Edit,
+			Play,
+		} m_SceneState = SceneState::Edit;
 	};
 }
