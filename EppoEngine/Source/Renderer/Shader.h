@@ -23,7 +23,7 @@ namespace Eppo
 
 	private:
 		auto CompileOrGetCache() -> std::unordered_map<nvrhi::ShaderType, std::vector<char>>;
-		auto Compile(std::unordered_map<nvrhi::ShaderType, std::vector<char>>& bytes, nvrhi::ShaderType type, std::string_view source) -> void;
+		auto Compile(std::unordered_map<nvrhi::ShaderType, std::vector<char>>& bytes, nvrhi::ShaderType type, const std::string& source) -> void;
 
 	private:
 		ShaderSpecification m_Specification;

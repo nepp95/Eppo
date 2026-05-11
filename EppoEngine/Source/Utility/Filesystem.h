@@ -4,21 +4,6 @@
 
 namespace Eppo::FS
 {
-	inline auto GetRootDirectory() -> std::filesystem::path
-	{
-		return std::filesystem::current_path();
-	}
-
-	inline auto GetResourcesDirectory() -> std::filesystem::path
-	{
-		return GetRootDirectory() / "Resources";
-	}
-	
-	inline auto GetShaderCacheDirectory() -> std::filesystem::path
-	{
-		return GetResourcesDirectory() / "Shaders" / "Cache";
-	}
-
 	inline auto CreateDirectory(const std::filesystem::path& path) -> bool
 	{
 		return std::filesystem::create_directories(path);
@@ -53,6 +38,26 @@ namespace Eppo::FS
 		return true;
 	}
 
+	inline auto GetRootDirectory() -> std::filesystem::path
+	{
+		return std::filesystem::current_path();
+	}
+
+	inline auto GetResourcesDirectory() -> std::filesystem::path
+	{
+		return GetRootDirectory() / "Resources";
+	}
+	
+	inline auto GetShaderCacheDirectory() -> std::filesystem::path
+	{
+		const std::filesystem::path cacheDir = GetResourcesDirectory() / "Shaders" / "Cache";
+
+		if (!Exists(cacheDir))
+			CreateDirectory(cacheDir);
+
+		return cacheDir;
+	}
+
 	inline auto ReadBytes(const std::filesystem::path& path) -> std::vector<char>
 	{
 		// Open file stream
@@ -75,6 +80,40 @@ namespace Eppo::FS
 		in.read(bytes.data(), fileSize);
 
 		return bytes;
+	}
+
+	inline auto WriteBytes(const std::filesystem::path& path, const std::vector<char>& bytes, const bool overwrite) -> bool
+	{
+		if (Exists(path) && !overwrite)
+			return false;
+
+		std::ofstream out(path, std::ios::binary);
+		if (!out)
+		{
+			Log::Error("Failed to open file stream for path '{}'", path);
+			return false;
+		}
+
+		out.write(bytes.data(), bytes.size());
+
+		return true;
+	}
+
+	inline auto WriteBytes(const std::filesystem::path& path, const void* data, size_t size, const bool overwrite) -> bool
+	{
+		if (Exists(path) && !overwrite)
+			return false;
+
+		std::ofstream out(path, std::ios::binary);
+		if (!out)
+		{
+			Log::Error("Failed to open file stream for path '{}'", path);
+			return false;
+		}
+
+		out.write(static_cast<const char*>(data), size);
+
+		return true;
 	}
 
 	inline auto ReadText(const std::filesystem::path& path) -> std::string
@@ -100,5 +139,20 @@ namespace Eppo::FS
 		in.read(text.data(), text.size());
 
 		return text;
+	}
+
+	inline auto WriteText(const std::filesystem::path& path, const std::string& text, const bool overwrite) -> bool
+	{
+		if (Exists(path) && !overwrite)
+			return false;
+
+		std::ofstream out(path);
+		if (!out)
+		{
+			Log::Error("Failed to open file stream for path '{}'", path);
+			return false;
+		}
+
+		out.write(text.c_str(), text.size());
 	}
 }

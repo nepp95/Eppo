@@ -33,6 +33,6 @@ get_property(G_SHADER_OUTPUTS GLOBAL PROPERTY G_SHADER_OUTPUTS)
 add_custom_target(CompileShaders ALL DEPENDS ${G_SHADER_OUTPUTS})
 add_dependencies(EppoEditor CompileShaders)
 
-# add_custom_command(TARGET CompileShaders POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/EppoEditor/Resources/Shaders/Bin" "$<TARGET_FILE_DIR:EppoEditor>/Resources/Shaders"
-# )
+add_custom_command(TARGET CompileShaders POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/EppoEditor/Resources/Shaders" "$<TARGET_FILE_DIR:EppoEditor>/Resources/Shaders"
+)
