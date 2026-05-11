@@ -135,12 +135,12 @@ namespace Eppo
 		utils->CreateDefaultIncludeHandler(&includeHandler);
 
 		// Command line args for the compiler
-		const std::wstring vertPath = FS::GetResourcesDirectory() / "Shaders" / std::format("{}.vert", m_Specification.Name);
-		const std::wstring pixelPath = FS::GetResourcesDirectory() / "Shaders" / std::format("{}.frag", m_Specification.Name);
-		const std::wstring vertSpvPath = FS::GetShaderCacheDirectory() / std::format("{}.vert.spv", m_Specification.Name);
-		const std::wstring pixelSpvPath = FS::GetShaderCacheDirectory() / std::format("{}.frag.spv", m_Specification.Name);
-		const std::wstring vertDxilPath = FS::GetShaderCacheDirectory() / std::format("{}.vert.dxil", m_Specification.Name);
-		const std::wstring pixelDxilPath = FS::GetShaderCacheDirectory() / std::format("{}.frag.dxil", m_Specification.Name);
+		const std::wstring vertPath = std::filesystem::path(FS::GetResourcesDirectory() / "Shaders" / std::format("{}.vert", m_Specification.Name)).wstring();
+		const std::wstring pixelPath = std::filesystem::path(FS::GetResourcesDirectory() / "Shaders" / std::format("{}.frag", m_Specification.Name)).wstring();
+		const std::wstring vertSpvPath = std::filesystem::path(FS::GetShaderCacheDirectory() / std::format("{}.vert.spv", m_Specification.Name)).wstring();
+		const std::wstring pixelSpvPath = std::filesystem::path(FS::GetShaderCacheDirectory() / std::format("{}.frag.spv", m_Specification.Name)).wstring();
+		const std::wstring vertDxilPath = std::filesystem::path(FS::GetShaderCacheDirectory() / std::format("{}.vert.dxil", m_Specification.Name)).wstring();
+		const std::wstring pixelDxilPath = std::filesystem::path(FS::GetShaderCacheDirectory() / std::format("{}.frag.dxil", m_Specification.Name)).wstring();
 
 		const bool isVertex = type == nvrhi::ShaderType::Vertex ? true : false;
 		LPCWSTR argsSpv[] = {

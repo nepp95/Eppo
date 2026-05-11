@@ -154,5 +154,7 @@ namespace Eppo::FS
 		}
 
 		out.write(text.c_str(), text.size());
+
+		return true;
 	}
 }
