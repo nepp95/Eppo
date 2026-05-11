@@ -191,7 +191,7 @@ namespace Eppo
 
 			// Save binary
 			CComPtr<IDxcBlob> binary = nullptr;
-			CComPtr<IDxcBlobUtf16> binaryName = nullptr;
+			CComPtr<IDxcBlobWide> binaryName = nullptr;
 			result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&binary), &binaryName);
 			if (binary != nullptr)
 			{
