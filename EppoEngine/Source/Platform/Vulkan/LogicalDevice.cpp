@@ -13,6 +13,8 @@ namespace Eppo
 				Log::Error("Device extension '{}' is not supported by the device!", extension);
 				return;
 			}
+			else
+				Log::Info("Enabled device extension '{}'", extension);
 		}
 
 		// Create device queue infos

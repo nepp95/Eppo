@@ -8,5 +8,8 @@ namespace Eppo
 	{
 	public:
 		auto RenderGui() -> void override;
+
+	private:
+		auto DrawEntityNode(Entity entity) -> void;
 	};
 }

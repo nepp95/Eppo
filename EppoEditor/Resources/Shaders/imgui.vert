@@ -1,3 +1,5 @@
+#include "Includes/platform.hlsli"
+
 struct Input
 {
 	float2 Position : POSITION0;
@@ -10,7 +12,8 @@ struct PushConstants
 	float2 Scale;
 	float2 Translate;
 };
-[[vk::push_constant]] PushConstants uPC;
+PUSH_CONSTANTS
+ConstantBuffer<PushConstants> uPC : register(b0, space1);
 
 struct Output
 {

@@ -14,7 +14,11 @@ namespace Eppo
 
 	constexpr uint32_t g_MaxFramesInFlight = 2;
 	constexpr std::array g_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
-	constexpr std::array g_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	constexpr std::array g_DeviceExtensions = { 
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME,
+		VK_GOOGLE_USER_TYPE_EXTENSION_NAME
+	};
 
 	static VKAPI_ATTR auto VKAPI_CALL VulkanDebugCallback(
 		const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, const VkDebugUtilsMessageTypeFlagsEXT messageType,

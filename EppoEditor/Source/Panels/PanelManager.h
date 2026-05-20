@@ -26,6 +26,7 @@ namespace Eppo
 				.IsOpen = isOpen,
 			};
 
+			data.Panel->SetPanelManager(this);
 			m_PanelData[panelName] = data;
 		}
 
@@ -44,8 +45,16 @@ namespace Eppo
 		auto HasPanel(const std::string& panelName) const -> bool { return m_PanelData.contains(panelName); }
 		auto TogglePanel(const std::string& panelName) -> void;
 
+		auto SetSceneContext(const std::shared_ptr<Scene>& scene) -> void { m_SceneContext = scene; }
+		auto GetSceneContext() const -> const std::shared_ptr<Scene>& { return m_SceneContext; }
+		
+		auto SetSelectedEntity(Entity entity) -> void { m_SelectedEntity = entity; }
+		auto GetSelectedEntity() const -> Entity { return m_SelectedEntity; }
+
 	private:
 		std::unordered_map<std::string, PanelData> m_PanelData;
+
 		std::shared_ptr<Scene> m_SceneContext = nullptr;
+		Entity m_SelectedEntity;
 	};
 }

@@ -12,7 +12,7 @@ namespace Eppo
 			.Name = name,
 		};
 
-		m_Shaders[name] = std::make_shared<Shader>(shaderSpec);
+		m_Shaders[name] = Shader::Create(shaderSpec);
 	}
 
 	auto ShaderLibrary::Get(const std::string& name) const -> const std::shared_ptr<Shader>&

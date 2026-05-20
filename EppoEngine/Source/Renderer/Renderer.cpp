@@ -5,7 +5,7 @@ namespace Eppo
 {
 	Renderer::Renderer()
 	{
-		//m_ShaderLibrary.Load("geometry");
+		m_ShaderLibrary.Load("geometry");
 		m_ShaderLibrary.Load("imgui");
 	}
 

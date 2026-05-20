@@ -36,5 +36,6 @@ namespace Eppo
 		std::unordered_map<UUID, EntityHandle> m_EntityMap;
 
 		friend class Entity;
+		friend class SceneHierarchyPanel;
 	};
 }

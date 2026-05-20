@@ -22,8 +22,13 @@ endif()
 
 target_include_directories(EppoEngine PUBLIC ${INCLUDE_DIRS})
 target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/Lib")
-target_link_libraries(EppoEngine PUBLIC EnTT::EnTT glm::glm imgui::imgui nvrhi spdlog::spdlog Vulkan::Vulkan Vulkan::dxc_lib)
-target_link_libraries(EppoEngine PRIVATE glfw)
+target_link_libraries(EppoEngine PUBLIC EnTT::EnTT glm::glm imgui::imgui nvrhi spdlog::spdlog Vulkan::Vulkan)
+target_link_libraries(EppoEngine PRIVATE
+    glfw
+    Vulkan::dxc_lib
+    $<$<CONFIG:Debug>:spirv-cross-cored> $<$<CONFIG:RelWithDebInfo>:spirv-cross-cored>
+    $<$<CONFIG:Dist>:spirv-cross-core>
+)
 target_precompile_headers(EppoEngine PRIVATE "Source/pch.h")
 target_compile_definitions(EppoEngine PUBLIC
     $<$<CONFIG:Debug>:EP_DEBUG> $<$<CONFIG:RelWithDebInfo>:EP_RELEASE> $<$<CONFIG:Release>:EP_DIST>
