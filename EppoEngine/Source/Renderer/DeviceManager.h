@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Window.h"
+#include "Renderer/Framebuffer.h"
 #include "Renderer/Renderer.h"
 
 #include <nvrhi/nvrhi.h>
@@ -54,8 +55,7 @@ namespace Eppo
 	struct SwapchainImage
 	{
 		void* NativeImage = nullptr;
-		nvrhi::TextureHandle Texture = nullptr;
-		nvrhi::FramebufferHandle Framebuffer = nullptr;
+		std::shared_ptr<Framebuffer> Framebuffer = nullptr;
 	};
 
 	struct DeviceParams

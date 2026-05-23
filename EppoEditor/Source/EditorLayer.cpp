@@ -22,7 +22,7 @@ namespace Eppo
 		m_ActiveScene->CreateEntity("Test");
 		m_PanelManager->SetSceneContext(m_ActiveScene);
 
-		m_SceneRenderer = std::make_shared<SceneRenderer>(m_ActiveScene);
+		m_SceneRenderer = std::make_shared<SceneRenderer>(m_ActiveScene, m_ViewportWidth, m_ViewportHeight);
 	}
 
 	auto EditorLayer::OnDetach() -> void

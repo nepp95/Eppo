@@ -16,6 +16,15 @@ namespace Eppo
 	{
 		EP_ASSERT(!s_Instance, "There can only be one instance of the application!");
 		s_Instance = this;
+
+		// Create window
+		m_Window = std::make_shared<Window>(1600, 900);
+		m_Window->SetEventCallback(
+			[this](Event& e) -> void
+			{
+				OnEvent(e);
+			}
+		);
 	}
 
 	Application::~Application()
@@ -38,15 +47,6 @@ namespace Eppo
 	auto Application::Run() -> void
 	{
 		// Deferred initialization
-		// Create window
-		m_Window = std::make_shared<Window>(1600, 900);
-		m_Window->SetEventCallback(
-			[this](Event& e) -> void
-			{
-				OnEvent(e);
-			}
-		);
-		
 		// Create device manager (dx11/dx12/vk)
 		DeviceParams deviceParams{
 			.API = RendererAPI::Vulkan,

@@ -27,8 +27,8 @@ namespace Eppo
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
-		uint32_t m_ViewportWidth = 0;
-		uint32_t m_ViewportHeight = 0;
+		uint32_t m_ViewportWidth = 1600;
+		uint32_t m_ViewportHeight = 900;
 
 		enum class SceneState
 		{

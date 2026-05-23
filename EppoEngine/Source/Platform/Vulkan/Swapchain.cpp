@@ -3,6 +3,7 @@
 
 #include "Core/Application.h"
 #include "Platform/Vulkan/DeviceManagerVK.h"
+#include "Renderer/Image.h"
 
 #include <GLFW/glfw3.h>
 #include <nvrhi/vulkan.h>
@@ -198,23 +199,24 @@ namespace Eppo
 			auto& image = m_Images.emplace_back();
 			image.NativeImage = images.at(i);
 
-			nvrhi::TextureDesc textureDesc{
-				.width = m_Extent.width,
-				.height = m_Extent.height,
-				.format = nvrhi::Format::RGBA8_UNORM,
-				.dimension = nvrhi::TextureDimension::Texture2D,
-				.debugName = std::format("Swapchain Image {}", i),
-				.isRenderTarget = true,
-				.initialState = nvrhi::ResourceStates::Present,
-				.keepInitialState = true,
+			ImageSpecification imageSpec{
+				.ImageFormat = nvrhi::Format::RGBA8_UNORM,
+				.Width = m_Extent.width,
+				.Height = m_Extent.height,
+				.InitialState = nvrhi::ResourceStates::Present,
+				.ExistingImage = image.NativeImage,
+				.DebugName = std::format("Swapchain Image {}", i),
 			};
 
-			image.Texture = dm->GetDevice()->createHandleForNativeTexture(nvrhi::ObjectTypes::VK_Image, nvrhi::Object(image.NativeImage), textureDesc);
+			FramebufferSpecification framebufferSpec{
+				.Width = m_Extent.width,
+				.Height = m_Extent.height,
+				.SwapchainTarget = true,
+				.SwapchainImage = std::make_shared<Image>(imageSpec),
+				.DebugName = std::format("Swapchain Framebuffer {}", i),
+			};
 
-			nvrhi::FramebufferDesc framebufferDesc{};
-			framebufferDesc.addColorAttachment(image.Texture);
-
-			image.Framebuffer = dm->GetDevice()->createFramebuffer(framebufferDesc);
+			image.Framebuffer = std::make_shared<Framebuffer>(framebufferSpec);
 
 			// Create present semaphores
 			VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_PresentSemaphores[i]), "Failed to create semaphore!");

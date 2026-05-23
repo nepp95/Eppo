@@ -23,40 +23,7 @@ namespace Eppo
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
-		// Input layout
-		const std::array<nvrhi::VertexAttributeDesc, 3> vertexAttributeDescs = {
-			nvrhi::VertexAttributeDesc{
-				.name = "POSITION",
-				.format = nvrhi::Format::RG32_FLOAT,
-				.arraySize = 1,
-				.bufferIndex = 0,
-				.offset = offsetof(ImDrawVert, pos),
-				.elementStride = sizeof(ImDrawVert),
-				.isInstanced = false,
-			},
-			nvrhi::VertexAttributeDesc{
-				.name = "TEXCOORD",
-				.format = nvrhi::Format::RG32_FLOAT,
-				.arraySize = 1,
-				.bufferIndex = 0,
-				.offset = offsetof(ImDrawVert, uv),
-				.elementStride = sizeof(ImDrawVert),
-				.isInstanced = false,
-			},
-			nvrhi::VertexAttributeDesc{
-				.name = "COLOR",
-				.format = nvrhi::Format::RGBA8_UNORM,
-				.arraySize = 1,
-				.bufferIndex = 0,
-				.offset = offsetof(ImDrawVert, col),
-				.elementStride = sizeof(ImDrawVert),
-				.isInstanced = false,
-			},
-		};
-
 		const auto& shader = renderer->GetShader("imgui");
-
-		nvrhi::InputLayoutHandle inputLayout = device->createInputLayout(vertexAttributeDescs.data(), static_cast<uint32_t>(vertexAttributeDescs.size()), shader->GetVertexShaderHandle());
 
 		// Render state
 		nvrhi::BlendState blendState;
@@ -86,23 +53,15 @@ namespace Eppo
 			.rasterState = rasterState,
 		};
 
-		// Binding layout
-		nvrhi::BindingLayoutDesc bindingLayoutDesc{
-			.visibility = nvrhi::ShaderType::All,
-			.bindings = {
-				nvrhi::BindingLayoutItem::PushConstants(0, sizeof(glm::vec2) * 2),
-				nvrhi::BindingLayoutItem::Texture_SRV(0),
-				nvrhi::BindingLayoutItem::Sampler(0)
-			},
-		};
-
-		m_BindingSetLayout = device->createBindingLayout(bindingLayoutDesc);
-
 		// Pipeline
-		m_PipelineDesc.inputLayout = inputLayout;
-		m_PipelineDesc.VS = shader->GetVertexShaderHandle();
-		m_PipelineDesc.PS = shader->GetPixelShaderHandle();
+		m_PipelineDesc.inputLayout = shader->GetInputLayout();
+		m_PipelineDesc.VS = shader->GetShaderHandle(nvrhi::ShaderType::Vertex);
+		m_PipelineDesc.PS = shader->GetShaderHandle(nvrhi::ShaderType::Pixel);
 		m_PipelineDesc.renderState = renderState;
+
+		// We know we only have one binding layout
+		const auto& bindingLayouts = shader->GetBindingLayouts();
+		m_BindingSetLayout = bindingLayouts.at(0);
 		m_PipelineDesc.addBindingLayout(m_BindingSetLayout);
 
 		// Sampler
@@ -160,7 +119,7 @@ namespace Eppo
 
 	auto ImGuiRenderer::RenderToSwapchain(ImGuiViewport* viewport, const ScopedPtr<Swapchain>& swapchain) -> void
 	{
-		Render(viewport, GetOrCreatePipeline(swapchain), swapchain->GetCurrentSwapchainImage().Framebuffer);
+		Render(viewport, GetOrCreatePipeline(swapchain), swapchain->GetCurrentSwapchainImage().Framebuffer->GetFramebuffer());
 	}
 
 	auto ImGuiRenderer::Render(ImGuiViewport* viewport, nvrhi::GraphicsPipelineHandle pipeline, nvrhi::FramebufferHandle framebuffer) -> void
@@ -335,7 +294,7 @@ namespace Eppo
 		uint32_t framebufferIndex = swapchain->GetCurrentBackBufferIndex();
 		auto& pipelineCache = m_PipelineCache[swapchain.get()];
 
-		nvrhi::FramebufferHandle targetFramebuffer = swapchain->GetCurrentSwapchainImage().Framebuffer;
+		nvrhi::FramebufferHandle targetFramebuffer = swapchain->GetCurrentSwapchainImage().Framebuffer->GetFramebuffer();
 		nvrhi::GraphicsPipelineHandle pipeline = pipelineCache.Pipelines.at(framebufferIndex);
 
 		bool invalidate = !pipeline || pipelineCache.Framebuffers.at(framebufferIndex) != targetFramebuffer;
