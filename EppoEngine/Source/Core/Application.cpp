@@ -25,6 +25,18 @@ namespace Eppo
 				OnEvent(e);
 			}
 		);
+
+		// Create device manager (dx11/dx12/vk)
+		DeviceParams deviceParams{
+			.API = RendererAPI::Vulkan,
+		};
+
+		m_DeviceManager = DeviceManager::Create(m_Window, deviceParams);
+		m_DeviceManager->Init();
+		m_DeviceManager->InitRenderer();
+
+		// Create UI layer
+		m_ImGuiLayer = PushLayer<ImGuiLayer>();
 	}
 
 	Application::~Application()
@@ -46,19 +58,6 @@ namespace Eppo
 
 	auto Application::Run() -> void
 	{
-		// Deferred initialization
-		// Create device manager (dx11/dx12/vk)
-		DeviceParams deviceParams{
-			.API = RendererAPI::Vulkan,
-		};
-
-		m_DeviceManager = DeviceManager::Create(m_Window, deviceParams);
-		m_DeviceManager->Init();
-		m_DeviceManager->InitRenderer();
-
-		// Create UI layer
-		m_ImGuiLayer = PushLayer<ImGuiLayer>();
-
 		while (m_IsRunning)
 		{
 			const auto time = static_cast<float>(glfwGetTime());

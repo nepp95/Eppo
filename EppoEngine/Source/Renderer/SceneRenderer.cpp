@@ -34,6 +34,8 @@ namespace Eppo
 				.Framebuffer = std::make_shared<Framebuffer>(framebufferSpec),
 				.Width = m_Width,
 				.Height = m_Height,
+				.DepthTestEnable = false,
+				.DepthWriteEnable = false,
 			};
 
 			m_GeometryPipeline = std::make_shared<Pipeline>(pipelineSpec);

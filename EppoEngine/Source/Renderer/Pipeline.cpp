@@ -40,7 +40,7 @@ namespace Eppo
 				pipelineDesc.addBindingLayout(layout);
 		}
 
-		m_PipelineHandle = device->createGraphicsPipeline(pipelineDesc, nullptr);
+		m_PipelineHandle = device->createGraphicsPipeline(pipelineDesc, m_Specification.Framebuffer->GetFramebuffer());
 		EP_ASSERT(m_PipelineHandle);
 	}
 }
