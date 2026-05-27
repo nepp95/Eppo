@@ -4,29 +4,22 @@
 
 namespace Eppo
 {
-	class VertexBuffer
+	class UniformBuffer
 	{
 	public:
-		// This creates a buffer with CPU write access
-		VertexBuffer(uint64_t size);
-
-		// This creates a buffer without CPU access
-		VertexBuffer(const void* data, uint64_t size);
+		UniformBuffer(uint64_t size, const std::string& debugName = "UniformBuffer");
 
 		auto SetData(const void* data, uint64_t size, uint64_t offset = 0) -> void;
 
 		[[nodiscard]] auto GetBuffer() const -> nvrhi::BufferHandle { return m_Buffer; }
 		[[nodiscard]] constexpr auto GetSize() const -> uint64_t { return m_Size; };
-
-		static auto CreateCube() -> Ref<VertexBuffer>;
-
+		
 	private:
 		auto CreateBuffer() -> void;
 
 	private:
 		nvrhi::BufferHandle m_Buffer = nullptr;
 		uint64_t m_Size = 0;
-
-		bool m_CpuWritable = false;
+		std::string m_DebugName;
 	};
 }

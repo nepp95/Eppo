@@ -161,7 +161,7 @@ namespace Eppo
 			.framebuffer = framebuffer,
 		};
 
-		state.viewport.viewports.push_back(nvrhi::Viewport(fbWidth, fbHeight));
+		state.viewport.addViewport(nvrhi::Viewport(fbWidth, fbHeight));
 		state.viewport.scissorRects.resize(1);
 
 		// Vertex buffer
@@ -275,7 +275,7 @@ namespace Eppo
 
 	auto ImGuiRenderer::ReallocateBuffer(uint64_t size, bool indexBuffer) -> nvrhi::BufferHandle
 	{
-		const nvrhi::DeviceHandle device = DeviceManager::Get()->GetDevice();
+		const auto device = DeviceManager::Get()->GetDevice();
 
 		nvrhi::BufferDesc bufferDesc{
 			.byteSize = size,

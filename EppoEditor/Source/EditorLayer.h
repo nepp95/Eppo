@@ -17,11 +17,11 @@ namespace Eppo
 		auto OnEvent(Event& e) -> void override;
 		
 	private:
-		std::shared_ptr<PanelManager> m_PanelManager = nullptr;
+		Ref<PanelManager> m_PanelManager = nullptr;
 
-		std::shared_ptr<Scene> m_ActiveScene = nullptr;
-		std::shared_ptr<Scene> m_EditorScene = nullptr;
-		std::shared_ptr<SceneRenderer> m_SceneRenderer = nullptr;
+		Ref<Scene> m_ActiveScene = nullptr;
+		Ref<Scene> m_EditorScene = nullptr;
+		Ref<SceneRenderer> m_SceneRenderer = nullptr;
 
 		ScopedPtr<EditorCamera> m_EditorCamera = nullptr;
 

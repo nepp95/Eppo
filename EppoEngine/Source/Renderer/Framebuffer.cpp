@@ -44,7 +44,7 @@ namespace Eppo
 					.DebugName = std::format("{} Image {}", m_Specification.DebugName, attachmentIndex),
 				};
 
-				std::shared_ptr<Image> image = std::make_shared<Image>(spec);
+				Ref<Image> image = CreateRef<Image>(spec);
 				m_Images.emplace_back(image);
 				framebufferDesc.addColorAttachment(image->GetTexture());
 				attachmentIndex++;

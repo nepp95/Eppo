@@ -15,7 +15,7 @@ namespace Eppo
 		m_Shaders[name] = Shader::Create(shaderSpec);
 	}
 
-	auto ShaderLibrary::Get(const std::string& name) const -> const std::shared_ptr<Shader>&
+	auto ShaderLibrary::Get(const std::string& name) const -> const Ref<Shader>&
 	{
 		if (m_Shaders.contains(name))
 			return m_Shaders.at(name);

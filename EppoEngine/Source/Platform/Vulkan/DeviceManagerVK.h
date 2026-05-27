@@ -15,7 +15,7 @@ namespace Eppo
 	class DeviceManagerVK : public DeviceManager
 	{
 	public:
-		DeviceManagerVK(const std::shared_ptr<Window>& window, const DeviceParams& params);
+		DeviceManagerVK(const Ref<Window>& window, const DeviceParams& params);
 		virtual ~DeviceManagerVK() = default;
 
 		auto Init() -> void override;

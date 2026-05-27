@@ -9,7 +9,7 @@ namespace Eppo
 		m_PanelManager = panelManager;
 	}
 
-	auto Panel::GetSceneContext() const -> std::shared_ptr<Scene>
+	auto Panel::GetSceneContext() const -> Ref<Scene>
 	{
 		return m_PanelManager->GetSceneContext();
 	}

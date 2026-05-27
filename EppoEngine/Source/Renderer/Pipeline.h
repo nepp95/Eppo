@@ -7,8 +7,8 @@ namespace Eppo
 {
 	struct PipelineSpecification
 	{
-		std::shared_ptr<Shader> Shader;
-		std::shared_ptr<Framebuffer> Framebuffer;
+		Ref<Shader> Shader;
+		Ref<Framebuffer> Framebuffer;
 
 		uint32_t Width = 0;
 		uint32_t Height = 0;

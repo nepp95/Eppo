@@ -11,9 +11,9 @@ namespace Eppo
 		~ShaderLibrary() = default;
 
 		auto Load(const std::string& name) -> void;
-		[[nodiscard]] auto Get(const std::string& name) const -> const std::shared_ptr<Shader>&;
+		[[nodiscard]] auto Get(const std::string& name) const -> const Ref<Shader>&;
 
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 }

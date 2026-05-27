@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Renderer/Camera/EditorCamera.h"
+#include "Renderer/IndexBuffer.h"
 #include "Renderer/Pipeline.h"
+#include "Renderer/UniformBuffer.h"
+#include "Renderer/VertexBuffer.h"
 #include "Scene/Entity.h"
 #include "Scene/Scene.h"
 
@@ -12,7 +15,7 @@ namespace Eppo
 	class SceneRenderer
 	{
 	public:
-		SceneRenderer(const std::shared_ptr<Scene>& scene, uint32_t width = 0, uint32_t height = 0);
+		SceneRenderer(const Ref<Scene>& scene, uint32_t width = 0, uint32_t height = 0);
 
 		auto BeginScene(const ScopedPtr<EditorCamera>& camera) -> void;
 		auto EndScene() -> void;
@@ -25,13 +28,15 @@ namespace Eppo
 		auto GeometryPass() -> void;
 
 	private:
-		std::shared_ptr<Scene> m_Scene = nullptr;
+		Ref<Scene> m_Scene = nullptr;
 		nvrhi::CommandListHandle m_CommandList = nullptr;
 
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 
-		std::shared_ptr<Pipeline> m_GeometryPipeline = nullptr;
+		Ref<VertexBuffer> m_VB = nullptr;
+		Ref<IndexBuffer> m_IB = nullptr;
+		Ref<Pipeline> m_GeometryPipeline = nullptr;
 
 		struct DrawKey
 		{
@@ -58,6 +63,10 @@ namespace Eppo
 			glm::mat4 ViewProjection;
 			glm::vec4 Position;
 		} m_CameraData{};
+		Ref<UniformBuffer> m_CameraUB = nullptr;
+
+		std::array<glm::vec4, 4> m_LightData{};
+		Ref<UniformBuffer> m_LightsUB = nullptr;
 
 		struct DrawStatistics
 		{

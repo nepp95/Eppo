@@ -18,14 +18,14 @@ namespace Eppo
 
 	}
 
-	auto Scene::OnRenderEditor(const std::shared_ptr<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void
+	auto Scene::OnRenderEditor(const Ref<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void
 	{
 		sceneRenderer->BeginScene(camera);
 		RenderScene(sceneRenderer);
 		sceneRenderer->EndScene();
 	}
 
-	auto Scene::OnRenderRuntime(const std::shared_ptr<SceneRenderer>& sceneRenderer) -> void
+	auto Scene::OnRenderRuntime(const Ref<SceneRenderer>& sceneRenderer) -> void
 	{
 
 	}
@@ -58,7 +58,7 @@ namespace Eppo
 		m_Registry.destroy(entity);
 	}
 
-	auto Scene::RenderScene(const std::shared_ptr<SceneRenderer>& sceneRenderer) -> void
+	auto Scene::RenderScene(const Ref<SceneRenderer>& sceneRenderer) -> void
 	{
 
 	}

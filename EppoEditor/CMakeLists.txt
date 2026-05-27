@@ -19,12 +19,3 @@ add_custom_command(TARGET EppoEditor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:EppoEditor> $<TARGET_RUNTIME_DLLS:EppoEditor>
     COMMAND_EXPAND_LISTS
 )
-
-# Resource copy
-add_custom_command(TARGET EppoEditor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/EppoEditor/Resources/Fonts" "$<TARGET_FILE_DIR:EppoEditor>/Resources/Fonts"
-)
-
-add_custom_command(TARGET EppoEditor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/EppoEditor/Resources/Shaders" "$<TARGET_FILE_DIR:EppoEditor>/Resources/Shaders"
-)

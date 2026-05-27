@@ -12,17 +12,17 @@ namespace Eppo
 
 	auto EditorLayer::OnAttach() -> void
 	{
-		m_PanelManager = std::make_shared<PanelManager>();
+		m_PanelManager = CreateRef<PanelManager>();
 		m_PanelManager->AddPanel<SceneHierarchyPanel>(SCENE_HIERARCHY_PANEL, true);
 		//m_PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL, true);
 
 		m_EditorCamera = CreateScopedPtr<EditorCamera>(glm::vec3(-10.0f, 1.0f, 0.0f), 0.0f, 0.0f);
 
-		m_ActiveScene = std::make_shared<Scene>();
+		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->CreateEntity("Test");
 		m_PanelManager->SetSceneContext(m_ActiveScene);
 
-		m_SceneRenderer = std::make_shared<SceneRenderer>(m_ActiveScene, m_ViewportWidth, m_ViewportHeight);
+		m_SceneRenderer = CreateRef<SceneRenderer>(m_ActiveScene, m_ViewportWidth, m_ViewportHeight);
 	}
 
 	auto EditorLayer::OnDetach() -> void

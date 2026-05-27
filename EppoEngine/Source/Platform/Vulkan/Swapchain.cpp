@@ -212,11 +212,11 @@ namespace Eppo
 				.Width = m_Extent.width,
 				.Height = m_Extent.height,
 				.SwapchainTarget = true,
-				.SwapchainImage = std::make_shared<Image>(imageSpec),
+				.SwapchainImage = CreateRef<Image>(imageSpec),
 				.DebugName = std::format("Swapchain Framebuffer {}", i),
 			};
 
-			image.Framebuffer = std::make_shared<Framebuffer>(framebufferSpec);
+			image.Framebuffer = CreateRef<Framebuffer>(framebufferSpec);
 
 			// Create present semaphores
 			VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_PresentSemaphores[i]), "Failed to create semaphore!");

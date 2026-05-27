@@ -18,7 +18,7 @@ namespace Eppo
 		s_Instance = this;
 
 		// Create window
-		m_Window = std::make_shared<Window>(1600, 900);
+		m_Window = CreateRef<Window>(1600, 900);
 		m_Window->SetEventCallback(
 			[this](Event& e) -> void
 			{
@@ -47,7 +47,7 @@ namespace Eppo
 
 		for (auto it = m_LayerStack.begin(); it != m_LayerStack.end();)
 		{
-			std::shared_ptr layer = *it;
+			Ref layer = *it;
 			layer->OnDetach();
 			it = m_LayerStack.erase(it);
 		}

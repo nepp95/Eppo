@@ -14,7 +14,7 @@ namespace Eppo
 		virtual auto RenderGui() -> void = 0;
 
 	protected:
-		auto GetSceneContext() const -> std::shared_ptr<Scene>;
+		auto GetSceneContext() const -> Ref<Scene>;
 		auto SetSelectedEntity(Entity entity) -> void;
 		auto GetSelectedEntity() const -> Entity;
 

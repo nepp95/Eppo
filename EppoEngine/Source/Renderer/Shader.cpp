@@ -56,7 +56,7 @@ namespace Eppo
 		return nullptr;
 	}
 
-	auto Shader::Create(ShaderSpecification spec) -> std::shared_ptr<Shader>
+	auto Shader::Create(ShaderSpecification spec) -> Ref<Shader>
 	{
 		const auto& dm = DeviceManager::Get();
 
@@ -70,7 +70,7 @@ namespace Eppo
 			}
 
 			case RendererAPI::Vulkan:
-				return std::make_shared<VulkanShader>(std::move(spec));
+				return CreateRef<VulkanShader>(std::move(spec));
 		}
 	}
 
@@ -110,7 +110,7 @@ namespace Eppo
 			attributeDesc.isInstanced = false;
 		}
 
-		m_InputLayout = device->createInputLayout(attributeDescs.data(), attributeDescs.size(), m_ShaderHandles.at(nvrhi::ShaderType::Vertex));
+		m_InputLayout = device->createInputLayout(attributeDescs.data(), static_cast<uint32_t>(attributeDescs.size()), m_ShaderHandles.at(nvrhi::ShaderType::Vertex));
 	}
 
 	auto Shader::CreateBindingLayout() -> void
@@ -123,6 +123,9 @@ namespace Eppo
 			nvrhi::BindingLayoutDesc bindingLayoutDesc{
 				.visibility = nvrhi::ShaderType::All,
 			};
+
+			if (set == 0 && m_HasPushConstants)
+				bindingLayoutDesc.addItem(nvrhi::BindingLayoutItem::PushConstants(m_PushConstants.Binding, m_PushConstants.Size));
 
 			for (const auto& resource : setResources)
 			{

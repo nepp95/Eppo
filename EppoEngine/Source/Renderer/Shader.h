@@ -17,6 +17,7 @@ namespace Eppo
 		std::string Name;
 		uint32_t Binding = 0;
 		uint32_t ArraySize = 1;
+		nvrhi::ShaderType Stage = nvrhi::ShaderType::None;
 		nvrhi::ResourceType Type = nvrhi::ResourceType::None;
 
 		auto operator==(const ShaderResourceBinding& other) const -> bool
@@ -24,6 +25,7 @@ namespace Eppo
 			return Name == other.Name &&
 				Binding == other.Binding &&
 				ArraySize == other.ArraySize &&
+				Stage == other.Stage &&
 				Type == other.Type;
 		}
 
@@ -31,6 +33,13 @@ namespace Eppo
 		{
 			return !(*this == other);
 		}
+	};
+
+	struct PushConstantRange
+	{
+		uint32_t Binding = 0;
+		uint32_t Size = 0;
+		nvrhi::ShaderType Stage = nvrhi::ShaderType::None;
 	};
 
 	struct ShaderSpecification
@@ -51,7 +60,7 @@ namespace Eppo
 
 		[[nodiscard]] constexpr auto GetName() const -> const std::string& { return m_Specification.Name; }
 
-		static auto Create(ShaderSpecification spec) -> std::shared_ptr<Shader>;
+		static auto Create(ShaderSpecification spec) -> Ref<Shader>;
 
 	protected:
 		auto CreateShaderHandles() -> void;
@@ -62,8 +71,11 @@ namespace Eppo
 		ShaderSpecification m_Specification;
 
 		std::unordered_map<nvrhi::ShaderType, nvrhi::ShaderHandle> m_ShaderHandles;
+		
 		std::unordered_map<uint32_t, std::vector<ShaderResourceBinding>> m_ShaderResources;
 		std::unordered_map<uint32_t, nvrhi::BindingLayoutHandle> m_BindingLayouts;
+		PushConstantRange m_PushConstants;
+		bool m_HasPushConstants = false;
 
 		std::vector<ShaderInputAttribute> m_ShaderInputs;
 		uint32_t m_InputAttributeStride = 0;

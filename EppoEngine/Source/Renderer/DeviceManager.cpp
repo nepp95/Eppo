@@ -6,12 +6,12 @@
 
 namespace Eppo
 {
-	auto DeviceManager::Get() -> std::shared_ptr<DeviceManager>
+	auto DeviceManager::Get() -> Ref<DeviceManager>
 	{
 		return Application::Get().GetDeviceManager();
 	}
 
-	auto DeviceManager::Create(const std::shared_ptr<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>
+	auto DeviceManager::Create(const Ref<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>
 	{
 		EP_ASSERT(params.API != RendererAPI::None, "No renderer api selected!");
 		#if !defined(EP_PLATFORM_WINDOWS)
@@ -53,7 +53,7 @@ namespace Eppo
 		m_Renderer = CreateScopedPtr<Renderer>();
 	}
 
-	DeviceManager::DeviceManager(const std::shared_ptr<Window>& window, const DeviceParams& params)
+	DeviceManager::DeviceManager(const Ref<Window>& window, const DeviceParams& params)
 		: m_Window(window), m_Params(params)
 	{}
 }

@@ -8,26 +8,26 @@ struct Camera
 	float4x4 Model;
 	float4 Position;
 };
-ConstantBuffer<Camera> uCamera : register(b0, space0);
+ConstantBuffer<Camera> uCamera : register(b1, space0);
 
 struct LightData
 {
 	float4 Lights[4];
 };
-ConstantBuffer<LightData> uLights : register(b1, space0);
+ConstantBuffer<LightData> uLights : register(b2, space0);
 
 struct Input
 {
-	float4 Position : SV_Position;
 	float3 WorldPos : POSITION0;
 	float3 Normal : NORMAL0;
 };
 
 struct PushConstants
 {
+	float4x4 Transform;
 	float3 MeshPosition;
-	float3 Color;
 	float Metallic;
+	float3 Color;
 	float Roughness;
 };
 PUSH_CONSTANTS

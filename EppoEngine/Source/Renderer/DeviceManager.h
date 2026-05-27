@@ -55,7 +55,7 @@ namespace Eppo
 	struct SwapchainImage
 	{
 		void* NativeImage = nullptr;
-		std::shared_ptr<Framebuffer> Framebuffer = nullptr;
+		Ref<Framebuffer> Framebuffer = nullptr;
 	};
 
 	struct DeviceParams
@@ -88,7 +88,7 @@ namespace Eppo
 		virtual ~DeviceManager() = default;
 
 		// Lifecycle
-		[[nodiscard]] static auto Create(const std::shared_ptr<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>;
+		[[nodiscard]] static auto Create(const Ref<Window>& window, const DeviceParams& params) -> ScopedPtr<DeviceManager>;
 		virtual auto Init() -> void = 0;
 		virtual auto Shutdown() -> void = 0;
 
@@ -108,15 +108,15 @@ namespace Eppo
 
 		// Device Manager
 		[[nodiscard]] auto GetParams() -> const DeviceParams& { return m_Params; }
-		static auto Get() -> std::shared_ptr<DeviceManager>;
+		static auto Get() -> Ref<DeviceManager>;
 
 	protected:
-		DeviceManager(const std::shared_ptr<Window>& window, const DeviceParams& params);
+		DeviceManager(const Ref<Window>& window, const DeviceParams& params);
 
 	protected:
 		DeviceParams m_Params;
 		ScopedPtr<Renderer> m_Renderer = nullptr;
-		std::shared_ptr<Window> m_Window = nullptr;
+		Ref<Window> m_Window = nullptr;
 
 		NvrhiMessageCallback m_MessageCallback;
 	};

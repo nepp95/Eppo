@@ -50,18 +50,18 @@ namespace Eppo
 
 		template<typename T>
 			requires(std::derived_from<T, Layer>)
-		auto PushLayer() -> std::shared_ptr<T>
+		auto PushLayer() -> Ref<T>
 		{
-			std::shared_ptr<T> layer = std::make_shared<T>();
+			Ref<T> layer = CreateRef<T>();
 			m_LayerStack.emplace_back(layer);
 			layer->OnAttach();
 			return layer;
 		}
 
 		[[nodiscard]] constexpr auto GetParams() const -> const ApplicationParams& { return m_Params; }
-		[[nodiscard]] constexpr auto GetWindow() const -> const std::shared_ptr<Window>& { return m_Window; }
-		[[nodiscard]] constexpr auto GetDeviceManager() const -> const std::shared_ptr<DeviceManager>& { return m_DeviceManager; }
-		[[nodiscard]] constexpr auto GetImGuiLayer() const -> const std::shared_ptr<ImGuiLayer>& { return m_ImGuiLayer; }
+		[[nodiscard]] constexpr auto GetWindow() const -> const Ref<Window>& { return m_Window; }
+		[[nodiscard]] constexpr auto GetDeviceManager() const -> const Ref<DeviceManager>& { return m_DeviceManager; }
+		[[nodiscard]] constexpr auto GetImGuiLayer() const -> const Ref<ImGuiLayer>& { return m_ImGuiLayer; }
 
 		static auto Get() -> Application& { return *s_Instance; }
 
@@ -73,11 +73,11 @@ namespace Eppo
 		auto OnWindowResize(const WindowResizeEvent& e) -> bool;
 
 	private:
-		std::shared_ptr<Window> m_Window = nullptr;
-		std::shared_ptr<DeviceManager> m_DeviceManager = nullptr;
+		Ref<Window> m_Window = nullptr;
+		Ref<DeviceManager> m_DeviceManager = nullptr;
 
-		std::vector<std::shared_ptr<Layer>> m_LayerStack;
-		std::shared_ptr<ImGuiLayer> m_ImGuiLayer = nullptr;
+		std::vector<Ref<Layer>> m_LayerStack;
+		Ref<ImGuiLayer> m_ImGuiLayer = nullptr;
 
 		float m_LastFrameTime = 0.0f;
 		bool m_IsRunning = true;

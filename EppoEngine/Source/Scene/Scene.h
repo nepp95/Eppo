@@ -21,15 +21,15 @@ namespace Eppo
 
 		auto OnUpdateRuntime(float timestep) -> void;
 
-		auto OnRenderEditor(const std::shared_ptr<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void;
-		auto OnRenderRuntime(const std::shared_ptr<SceneRenderer>& sceneRenderer) -> void;
+		auto OnRenderEditor(const Ref<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void;
+		auto OnRenderRuntime(const Ref<SceneRenderer>& sceneRenderer) -> void;
 
 		auto CreateEntity(const std::string& name = std::string()) -> Entity;
 		auto CreateEntityWithUUID(const UUID& uuid, const std::string& name) -> Entity;
 		auto DestroyEntity(Entity entity) -> void;
 
 	private:
-		auto RenderScene(const std::shared_ptr<SceneRenderer>& sceneRenderer) -> void;
+		auto RenderScene(const Ref<SceneRenderer>& sceneRenderer) -> void;
 
 	private:
 		entt::registry m_Registry;

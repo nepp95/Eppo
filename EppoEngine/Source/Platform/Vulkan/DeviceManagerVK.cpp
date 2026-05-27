@@ -7,7 +7,7 @@
 
 namespace Eppo
 {
-	DeviceManagerVK::DeviceManagerVK(const std::shared_ptr<Window>& window, const DeviceParams& params)
+	DeviceManagerVK::DeviceManagerVK(const Ref<Window>& window, const DeviceParams& params)
 		: DeviceManager(window, params)
 	{
 		CreateVulkanInstance();

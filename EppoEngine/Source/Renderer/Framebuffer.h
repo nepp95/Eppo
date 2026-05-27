@@ -36,11 +36,11 @@ namespace Eppo
 		
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		float DepthClearValue = 0.0f;
-		bool ClearColorOnLoad = true;
-		bool ClearDepthOnLoad = true;
+		bool ClearColorOnLoad = false;
+		bool ClearDepthOnLoad = false;
 
 		bool SwapchainTarget = false;
-		std::shared_ptr<Image> SwapchainImage = nullptr;
+		Ref<Image> SwapchainImage = nullptr;
 
 		std::string DebugName;
 	};
@@ -51,7 +51,10 @@ namespace Eppo
 		Framebuffer(FramebufferSpecification spec);
 
 		[[nodiscard]] auto GetFramebuffer() const -> nvrhi::FramebufferHandle { return m_Framebuffer; }
+		
 		[[nodiscard]] constexpr auto GetSpecification() const -> const FramebufferSpecification& { return m_Specification; }
+		[[nodiscard]] constexpr auto GetWidth() const -> uint32_t { return m_Width; }
+		[[nodiscard]] constexpr auto GetHeight() const -> uint32_t { return m_Height; }
 
 	private:
 		FramebufferSpecification m_Specification;
@@ -60,6 +63,6 @@ namespace Eppo
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 
-		std::vector<std::shared_ptr<Image>> m_Images;
+		std::vector<Ref<Image>> m_Images;
 	};
 }
