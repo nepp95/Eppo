@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/UUID.h"
+
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -159,5 +161,14 @@ struct fmt::formatter<std::filesystem::path> : formatter<std::string_view>
 	auto format(const std::filesystem::path& v, format_context& ctx) const -> format_context::iterator
 	{
 		return formatter<std::string_view>::format(v.string(), ctx);
+	}
+};
+
+template<>
+struct fmt::formatter<Eppo::UUID> : formatter<uint64_t>
+{
+	auto format(const Eppo::UUID& v, format_context& ctx) const -> format_context::iterator
+	{
+		return formatter<uint64_t>::format(static_cast<uint64_t>(v), ctx);
 	}
 };

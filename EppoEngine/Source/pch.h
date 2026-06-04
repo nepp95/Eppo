@@ -17,9 +17,11 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "Core/Base.h"
+#include "Core/Buffer.h"
 #include "Core/Hash.h"
 #include "Utility/Filesystem.h"
 #include "Utility/Random.h"

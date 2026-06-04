@@ -1,27 +1,32 @@
 #include "EditorLayer.h"
 
+#include "Panels/PropertyPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 
 namespace Eppo
 {
 	namespace
 	{
-		constexpr const char* SCENE_HIERARCHY_PANEL = "Scene Hierarchy";
 		constexpr const char* CONTENT_BROWSER_PANEL = "Content Browser";
+		constexpr const char* PROPERTY_PANEL = "Property";
+		constexpr const char* SCENE_HIERARCHY_PANEL = "Scene Hierarchy";
 	}
 
 	auto EditorLayer::OnAttach() -> void
 	{
 		m_PanelManager = CreateRef<PanelManager>();
+		m_PanelManager->AddPanel<PropertyPanel>(PROPERTY_PANEL, true);
 		m_PanelManager->AddPanel<SceneHierarchyPanel>(SCENE_HIERARCHY_PANEL, true);
 		//m_PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL, true);
 
 		m_EditorCamera = CreateScopedPtr<EditorCamera>(glm::vec3(-10.0f, 1.0f, 0.0f), 0.0f, 0.0f);
 
 		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->CreateEntity("Test");
-		m_PanelManager->SetSceneContext(m_ActiveScene);
+		auto testEntity = m_ActiveScene->CreateEntity("Test");
+		auto mesh = CreateRef<Mesh>("Resources/Meshes/main_sponza/NewSponza_Main_glTF_003.gltf");
+		testEntity.AddComponent<MeshComponent>(mesh);
 
+		m_PanelManager->SetSceneContext(m_ActiveScene);
 		m_SceneRenderer = CreateRef<SceneRenderer>(m_ActiveScene, m_ViewportWidth, m_ViewportHeight);
 	}
 
@@ -107,6 +112,9 @@ namespace Eppo
 			ImGui::EndMenuBar();
 		}
 
+		// Scene render
+		m_SceneRenderer->RenderGui();
+
 		// Panels
 		m_PanelManager->RenderGui();
 
@@ -122,6 +130,9 @@ namespace Eppo
 		const ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 		m_ViewportWidth = static_cast<uint32_t>(viewportSize.x);
 		m_ViewportHeight = static_cast<uint32_t>(viewportSize.y);
+
+		const auto& finalImage = m_SceneRenderer->GetFinalImage();
+		ImGui::Image(ImGuiEx::CreateTextureRef(finalImage->GetTexture()), ImVec2(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight)));
 
 		ImGui::End(); // Viewport
 		ImGui::PopStyleVar();

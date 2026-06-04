@@ -60,6 +60,8 @@ namespace Eppo
 	{
 		while (m_IsRunning)
 		{
+			EP_PROFILE_FN("Application::Run")
+
 			const auto time = static_cast<float>(glfwGetTime());
 			const float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
@@ -85,6 +87,7 @@ namespace Eppo
 			}
 
 			m_DeviceManager->GetDevice()->runGarbageCollection();
+			EP_FRAME_MARK;
 		}
 
 		m_DeviceManager->GetDevice()->waitForIdle();

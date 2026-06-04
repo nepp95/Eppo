@@ -57,6 +57,7 @@ namespace Eppo
 		[[nodiscard]] auto GetShaderHandle(const nvrhi::ShaderType type) -> nvrhi::ShaderHandle;
 		[[nodiscard]] auto GetInputLayout() -> nvrhi::InputLayoutHandle { return m_InputLayout; }
 		[[nodiscard]] auto GetBindingLayouts() const -> const std::unordered_map<uint32_t, nvrhi::BindingLayoutHandle>& { return m_BindingLayouts; }
+		[[nodiscard]] auto GetDescriptorTable() const -> nvrhi::DescriptorTableHandle { return m_DescriptorTable; }
 
 		[[nodiscard]] constexpr auto GetName() const -> const std::string& { return m_Specification.Name; }
 
@@ -74,6 +75,8 @@ namespace Eppo
 		
 		std::unordered_map<uint32_t, std::vector<ShaderResourceBinding>> m_ShaderResources;
 		std::unordered_map<uint32_t, nvrhi::BindingLayoutHandle> m_BindingLayouts;
+		nvrhi::DescriptorTableHandle m_DescriptorTable = nullptr;
+
 		PushConstantRange m_PushConstants;
 		bool m_HasPushConstants = false;
 

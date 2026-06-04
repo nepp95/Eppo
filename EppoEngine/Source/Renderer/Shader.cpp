@@ -62,15 +62,15 @@ namespace Eppo
 
 		switch (dm->GetParams().API)
 		{
-			case RendererAPI::DX11:
-			case RendererAPI::DX12:
-			{
-				EP_ASSERT(false);
-				break;
-			}
-
 			case RendererAPI::Vulkan:
 				return CreateRef<VulkanShader>(std::move(spec));
+
+			default:
+			{
+				EP_ASSERT(false);
+				return nullptr;
+				break;
+			}
 		}
 	}
 
@@ -129,13 +129,36 @@ namespace Eppo
 
 			for (const auto& resource : setResources)
 			{
-				nvrhi::BindingLayoutItem item{
-					.slot = resource.Binding,
-					.type = resource.Type,
-					.size = static_cast<uint16_t>(resource.ArraySize),
-				};
+				if (resource.ArraySize == 0)
+				{
+					// Bindless layout needed
+					nvrhi::BindlessLayoutDesc bindlessLayoutDesc{
+						.visibility = nvrhi::ShaderType::All,
+						.firstSlot = resource.Binding,
+						.maxCapacity = 1024,
+						.registerSpaces = {
+							nvrhi::BindingLayoutItem{
+								.slot = resource.Binding,
+								.type = resource.Type,
+							}
+						},
+					};
 
-				bindingLayoutDesc.addItem(item);
+					m_BindingLayouts[set] = device->createBindlessLayout(bindlessLayoutDesc);
+
+					if (!m_DescriptorTable)
+						m_DescriptorTable = device->createDescriptorTable(m_BindingLayouts.at(set));
+				}
+				else
+				{
+					nvrhi::BindingLayoutItem item{
+						.slot = resource.Binding,
+						.type = resource.Type,
+						.size = static_cast<uint16_t>(resource.ArraySize),
+					};
+
+					bindingLayoutDesc.addItem(item);
+				}
 			}
 
 			if (!bindingLayoutDesc.bindings.empty())

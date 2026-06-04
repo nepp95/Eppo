@@ -70,6 +70,8 @@ namespace Eppo
 
 	auto ImGuiLayer::OnEvent(Event& e) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::OnEvent")
+
 		if (m_BlockEvents)
 		{
 			EventType type = e.GetEventType();
@@ -84,6 +86,8 @@ namespace Eppo
 
 	auto ImGuiLayer::PrepareRender() -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::PrepareRender")
+
 		m_ImGuiRenderer->UpdateFontTexture();
 
 		ImGui_ImplGlfw_NewFrame();
@@ -92,6 +96,8 @@ namespace Eppo
 
 	auto ImGuiLayer::Render() -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::Render")
+
 		const auto& dm = static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 
 		ImGui::Render();
@@ -124,6 +130,8 @@ namespace Eppo
 
 	auto ImGuiLayer::ImGuiRenderer_CreateWindow(ImGuiViewport* viewport) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::ImGuiRenderer_CreateWindow")
+
 		const auto& dm = static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 		ImGuiPlatformIO& platformIO = ImGui::GetPlatformIO();
 
@@ -142,6 +150,8 @@ namespace Eppo
 
 	auto ImGuiLayer::ImGuiRenderer_DestroyWindow(ImGuiViewport* viewport) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::ImGuiRenderer_DestroyWindow")
+
 		ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
 		IM_DELETE(vd);
 		viewport->RendererUserData = nullptr;
@@ -149,12 +159,16 @@ namespace Eppo
 
 	auto ImGuiLayer::ImGuiRenderer_SetWindowSize(ImGuiViewport* viewport, ImVec2 size) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::ImGuiRenderer_SetWindowSize")
+
 		ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
 		vd->Swapchain->Resize(static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
 	}
 
 	auto ImGuiLayer::ImGuiRenderer_RenderWindow(ImGuiViewport* viewport, void*) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::ImGuiRenderer_RenderWindow")
+
 		ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
 		vd->Swapchain->BeginFrame();
 		vd->Renderer->UpdateFontTexture();
@@ -163,6 +177,8 @@ namespace Eppo
 
 	auto ImGuiLayer::ImGuiRenderer_SwapBuffers(ImGuiViewport* viewport, void*) -> void
 	{
+		EP_PROFILE_FN("ImGuiLayer::ImGuiRenderer_SwapBuffers")
+
 		ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
 		vd->Swapchain->Present();
 	}

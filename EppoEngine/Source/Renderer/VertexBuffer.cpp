@@ -21,10 +21,12 @@ namespace Eppo
 
 	auto VertexBuffer::SetData(const void* data, uint64_t size, uint64_t offset) -> void
 	{
+		EP_PROFILE_FN("VertexBuffer::SetData")
+
 		EP_ASSERT(UINT64_MAX - size > offset);
 
 		const auto device = DeviceManager::Get()->GetDevice();
-		const nvrhi::CommandListHandle cmdList = device->createCommandList();
+		const auto cmdList = device->createCommandList();
 
 		if (size > m_Size)
 		{
@@ -40,7 +42,7 @@ namespace Eppo
 		device->executeCommandList(cmdList);
 	}
 
-	auto VertexBuffer::CreateBuffer() -> void
+	auto VertexBuffer::CreateBuffer(bool isResize) -> void
 	{
 		const auto device = DeviceManager::Get()->GetDevice();
 
@@ -55,12 +57,22 @@ namespace Eppo
 		if (m_CpuWritable)
 			bufferDesc.cpuAccess = nvrhi::CpuAccessMode::Write;
 
-		m_Buffer = device->createBuffer(bufferDesc);
+		auto buffer = device->createBuffer(bufferDesc);
+		if (isResize)
+		{
+			const nvrhi::CommandListHandle cmdList = device->createCommandList();
+			cmdList->open();
+			cmdList->copyBuffer(buffer, 0, m_Buffer, 0, m_Buffer->getDesc().byteSize);
+			cmdList->close();
+			device->executeCommandList(cmdList);
+		}
+
+		m_Buffer = buffer;
 	}
 
 	auto VertexBuffer::CreateCube() -> Ref<VertexBuffer>
 	{
-		std::array vertices = {
+		constexpr std::array vertices = {
 			Vertex{{ -1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
 			Vertex{{  1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
 			Vertex{{  1.0f,  1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},

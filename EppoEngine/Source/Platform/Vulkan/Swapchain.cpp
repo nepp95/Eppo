@@ -51,6 +51,8 @@ namespace Eppo
 
 	auto Swapchain::BeginFrame() -> bool
 	{
+		EP_PROFILE_FN("Swapchain::BeginFrame")
+
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 		VkDevice device = dm->GetLogicalDevice()->GetNative();
 
@@ -88,6 +90,8 @@ namespace Eppo
 
 	auto Swapchain::Present() -> bool
 	{
+		EP_PROFILE_FN("Swapchain::Present")
+
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
 		VkDevice device = dm->GetLogicalDevice()->GetNative();
 		nvrhi::vulkan::IDevice* vkNvrhiDevice(dm->GetDevice()->getNativeObject(nvrhi::ObjectTypes::Nvrhi_VK_Device));
@@ -203,8 +207,8 @@ namespace Eppo
 				.ImageFormat = nvrhi::Format::RGBA8_UNORM,
 				.Width = m_Extent.width,
 				.Height = m_Extent.height,
+				.IsRenderTarget = true,
 				.InitialState = nvrhi::ResourceStates::Present,
-				.ExistingImage = image.NativeImage,
 				.DebugName = std::format("Swapchain Image {}", i),
 			};
 
@@ -212,7 +216,7 @@ namespace Eppo
 				.Width = m_Extent.width,
 				.Height = m_Extent.height,
 				.SwapchainTarget = true,
-				.SwapchainImage = CreateRef<Image>(imageSpec),
+				.SwapchainImage = CreateRef<Image>(imageSpec, image.NativeImage),
 				.DebugName = std::format("Swapchain Framebuffer {}", i),
 			};
 

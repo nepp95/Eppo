@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/UUID.h"
+#include "Renderer/Mesh.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -33,7 +34,7 @@ namespace Eppo
 	{
 		glm::vec3 Translation = glm::vec3(0.0f);
 		glm::vec3 Rotation = glm::vec3(0.0f);
-		glm::vec3 Scale = glm::vec3(0.0f);
+		glm::vec3 Scale = glm::vec3(1.0f);
 
 		TransformComponent() = default;
 		TransformComponent(const glm::vec3& translation)
@@ -46,5 +47,15 @@ namespace Eppo
 				* glm::mat4_cast(glm::quat(Rotation))
 				* glm::scale(glm::mat4(1.0f), Scale);
 		}
+	};
+
+	struct MeshComponent
+	{
+		Ref<Mesh> MeshHandle = nullptr;
+
+		MeshComponent() = default;
+		MeshComponent(const Ref<Mesh>& mesh)
+			: MeshHandle(mesh)
+		{}
 	};
 }

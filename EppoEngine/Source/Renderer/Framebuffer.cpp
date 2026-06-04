@@ -34,23 +34,57 @@ namespace Eppo
 		}
 		else
 		{
-			uint32_t attachmentIndex = 0;
-			for (const auto& attachment : m_Specification.Attachments.Attachments)
-			{
-				ImageSpecification spec{
-					.ImageFormat = attachment.ImageFormat,
-					.Width = m_Width,
-					.Height = m_Height,
-					.DebugName = std::format("{} Image {}", m_Specification.DebugName, attachmentIndex),
-				};
-
-				Ref<Image> image = CreateRef<Image>(spec);
-				m_Images.emplace_back(image);
-				framebufferDesc.addColorAttachment(image->GetTexture());
-				attachmentIndex++;
-			}
+			CreateImages(framebufferDesc);
 		}
 
 		m_Framebuffer = device->createFramebuffer(framebufferDesc);
+	}
+
+	auto Framebuffer::Resize(uint32_t width, uint32_t height) -> void
+	{
+		EP_PROFILE_FN("Framebuffer::Resize")
+
+		if (m_Specification.SwapchainTarget || m_Specification.SwapchainImage)
+		{
+			Log::Warn("Trying to resize swapchain image through framebuffer. Please use Swapchain::Resize instead.");
+			return;
+		}
+
+		const auto device = DeviceManager::Get()->GetDevice();
+
+		m_Width = width;
+		m_Height = height;
+
+		nvrhi::FramebufferDesc framebufferDesc{};
+		CreateImages(framebufferDesc);
+		m_Framebuffer = device->createFramebuffer(framebufferDesc);
+	}
+
+	auto Framebuffer::CreateImages(nvrhi::FramebufferDesc& desc) -> void
+	{
+		uint32_t attachmentIndex = 0;
+		m_Images.resize(m_Specification.Attachments.Attachments.size());
+
+		for (const auto& attachment : m_Specification.Attachments.Attachments)
+		{
+			ImageSpecification spec{
+				.ImageFormat = attachment.ImageFormat,
+				.Width = m_Width,
+				.Height = m_Height,
+				.IsRenderTarget = true,
+				.DebugName = std::format("{} Image {}", m_Specification.DebugName, attachmentIndex),
+			};
+
+			m_Images[attachmentIndex] = CreateRef<Image>(spec);
+			attachmentIndex++;
+		}
+
+		for (const auto& image : m_Images)
+		{
+			if (image->IsDepthImage())
+				desc.setDepthAttachment(image->GetTexture());
+			else
+				desc.addColorAttachment(image->GetTexture());
+		}
 	}
 }

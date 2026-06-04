@@ -16,7 +16,7 @@ namespace Eppo
 	constexpr std::array g_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 	constexpr std::array g_DeviceExtensions = { 
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+		VK_KHR_MAINTENANCE_1_EXTENSION_NAME,
 		VK_GOOGLE_HLSL_FUNCTIONALITY_1_EXTENSION_NAME,
 		VK_GOOGLE_USER_TYPE_EXTENSION_NAME
 	};

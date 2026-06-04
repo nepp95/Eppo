@@ -27,3 +27,8 @@ find_package(spdlog REQUIRED)
 if (NOT spdlog_FOUND)
     message(FATAL_ERROR "spdlog not found!")
 endif ()
+
+find_package(tracy REQUIRED)
+if (NOT tracy_FOUND)
+    message(FATAL_ERROR "tracy not found!")
+endif ()

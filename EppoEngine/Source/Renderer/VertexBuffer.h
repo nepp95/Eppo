@@ -21,7 +21,7 @@ namespace Eppo
 		static auto CreateCube() -> Ref<VertexBuffer>;
 
 	private:
-		auto CreateBuffer() -> void;
+		auto CreateBuffer(bool isResize = false) -> void;
 
 	private:
 		nvrhi::BufferHandle m_Buffer = nullptr;

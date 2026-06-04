@@ -12,11 +12,25 @@
 
 namespace Eppo
 {
+	struct ImGuiViewportData
+	{
+		bool WindowOwned = false;
+		ScopedPtr<Swapchain> Swapchain = nullptr;
+		ScopedPtr<ImGuiRenderer> Renderer = nullptr;
+	};
+
 	ImGuiRenderer::ImGuiRenderer()
 	{
 		const auto& dm = DeviceManager::Get();
 		const auto& renderer = dm->GetRenderer();
 		const auto device = dm->GetDevice();
+
+		uint32_t maxFrames = dm->GetParams().MaxFramesInFlight;
+		m_TimerQueries.resize(maxFrames);
+		m_LastQueryTimes.resize(maxFrames);
+
+		for (uint32_t i = 0; i < maxFrames; i++)
+			m_TimerQueries[i] = device->createTimerQuery();
 
 		auto& io = ImGui::GetIO();
 		io.BackendRendererName = "ImGuiRenderer";
@@ -83,6 +97,8 @@ namespace Eppo
 
 	auto ImGuiRenderer::UpdateFontTexture() -> void
 	{
+		EP_PROFILE_FN("ImGuiRenderer::UpdateFontTexture")
+
 		const auto& dm = DeviceManager::Get();
 		const auto device = dm->GetDevice();
 		auto& io = ImGui::GetIO();
@@ -119,15 +135,23 @@ namespace Eppo
 
 	auto ImGuiRenderer::RenderToSwapchain(ImGuiViewport* viewport, const ScopedPtr<Swapchain>& swapchain) -> void
 	{
+		EP_PROFILE_FN("ImGuiRenderer::RenderToSwapchain")
+
 		Render(viewport, GetOrCreatePipeline(swapchain), swapchain->GetCurrentSwapchainImage().Framebuffer->GetFramebuffer());
 	}
 
 	auto ImGuiRenderer::Render(ImGuiViewport* viewport, nvrhi::GraphicsPipelineHandle pipeline, nvrhi::FramebufferHandle framebuffer) -> void
 	{
+		EP_PROFILE_FN("ImGuiRenderer::Render")
+
 		const auto& dm = DeviceManager::Get();
+		const auto device = dm->GetDevice();
 		const auto& io = ImGui::GetIO();
+		const uint32_t frameIndex = dm->GetCurrentBackBufferIndex();
+		EP_ASSERT(frameIndex < dm->GetParams().MaxFramesInFlight);
 
 		m_CommandList->open();
+		m_CommandList->beginTimerQuery(m_TimerQueries.at(frameIndex));
 
 		const std::string marker = std::format("ImGui (Viewport: {})", viewport == ImGui::GetMainViewport() ? "Main" : std::to_string(reinterpret_cast<uint64_t>(viewport)));
 		m_CommandList->beginMarker(marker.c_str());
@@ -233,13 +257,35 @@ namespace Eppo
 		}
 
 		m_CommandList->endMarker();
+		m_CommandList->endTimerQuery(m_TimerQueries.at(frameIndex));
 		m_CommandList->close();
 
-		dm->GetDevice()->executeCommandList(m_CommandList);
+		device->executeCommandList(m_CommandList);
+		m_LastQueryTimes[frameIndex] = device->getTimerQueryTime(m_TimerQueries.at(frameIndex)) * 1000.0f;
+		device->resetTimerQuery(m_TimerQueries.at(frameIndex));
+	}
+
+	auto ImGuiRenderer::GetGPUTime(uint32_t frameIndex) const -> float
+	{
+		EP_ASSERT(frameIndex < m_LastQueryTimes.size());
+
+		float totalTime = m_LastQueryTimes.at(frameIndex);
+
+		const auto& platformIO = ImGui::GetPlatformIO();
+		for (ImGuiViewport* viewport : platformIO.Viewports)
+		{
+			ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
+			if (vd && vd->Renderer)
+				totalTime += vd->Renderer->GetGPUTime(frameIndex);
+		}
+
+		return totalTime;
 	}
 
 	auto ImGuiRenderer::UpdateGeometry(ImDrawData* drawData) -> void
 	{
+		EP_PROFILE_FN("ImGuiRenderer::UpdateGeometry")
+
 		// Calculate buffer size + a small margin since we can often have the case we just need a little bit more (menu's, hover effects, etc...)
 		uint64_t requiredVtxSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
 		uint64_t reallocateVtxSize = UINT64_MAX - requiredVtxSize > 1024 ? requiredVtxSize + 1024 : UINT64_MAX;
@@ -275,6 +321,8 @@ namespace Eppo
 
 	auto ImGuiRenderer::ReallocateBuffer(uint64_t size, bool indexBuffer) -> nvrhi::BufferHandle
 	{
+		EP_PROFILE_FN("ImGuiRenderer::ReallocateBuffer")
+
 		const auto device = DeviceManager::Get()->GetDevice();
 
 		nvrhi::BufferDesc bufferDesc{
@@ -291,6 +339,8 @@ namespace Eppo
 
 	auto ImGuiRenderer::GetOrCreatePipeline(const ScopedPtr<Swapchain>& swapchain) -> nvrhi::GraphicsPipelineHandle
 	{
+		EP_PROFILE_FN("ImGuiRenderer::GetOrCreatePipeline")
+
 		uint32_t framebufferIndex = swapchain->GetCurrentBackBufferIndex();
 		auto& pipelineCache = m_PipelineCache[swapchain.get()];
 
@@ -303,7 +353,7 @@ namespace Eppo
 			const auto& dm = DeviceManager::Get();
 			const auto device = dm->GetDevice();
 			
-			pipeline = device->createGraphicsPipeline(m_PipelineDesc, targetFramebuffer);
+			pipeline = device->createGraphicsPipeline(m_PipelineDesc, targetFramebuffer->getFramebufferInfo());
 			pipelineCache.Pipelines.at(framebufferIndex) = pipeline;
 			pipelineCache.Framebuffers.at(framebufferIndex) = targetFramebuffer;
 		}
@@ -313,6 +363,8 @@ namespace Eppo
 
 	auto ImGuiRenderer::GetOrCreateBindingSet(nvrhi::TextureHandle texture) -> nvrhi::BindingSetHandle
 	{
+		EP_PROFILE_FN("ImGuiRenderer::GetOrCreateBindingSet")
+
 		auto it = m_BindingSetCache.find(texture);
 		if (it != m_BindingSetCache.end())
 			return it->second;

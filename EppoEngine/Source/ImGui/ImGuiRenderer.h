@@ -21,6 +21,7 @@ namespace Eppo
 		auto UpdateFontTexture() -> void;
 		auto RenderToSwapchain(ImGuiViewport* viewport, const ScopedPtr<Swapchain>& swapchain) -> void;
 		auto Render(ImGuiViewport* viewport, nvrhi::GraphicsPipelineHandle pipeline, nvrhi::FramebufferHandle framebuffer) -> void;
+		auto GetGPUTime(uint32_t frameIndex) const -> float;
 
 	private:
 		auto UpdateGeometry(ImDrawData* drawData) -> void;
@@ -30,6 +31,8 @@ namespace Eppo
 
 	private:
 		nvrhi::CommandListHandle m_CommandList = nullptr;
+		std::vector<nvrhi::TimerQueryHandle> m_TimerQueries;
+		std::vector<float> m_LastQueryTimes;
 
 		nvrhi::GraphicsPipelineDesc m_PipelineDesc;
 

@@ -93,7 +93,9 @@ namespace Eppo
 
 		// Get device information
 		vkGetPhysicalDeviceMemoryProperties(m_Device, &m_MemoryProperties);
-		vkGetPhysicalDeviceFeatures(m_Device, &m_Features);
+
+		m_Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		vkGetPhysicalDeviceFeatures2(m_Device, &m_Features);
 
 		// Output device information
 		Log::Info("GPU Info:");

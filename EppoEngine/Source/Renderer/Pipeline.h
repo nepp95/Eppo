@@ -18,8 +18,8 @@ namespace Eppo
 		nvrhi::RasterFillMode FillMode = nvrhi::RasterFillMode::Solid;
 
 		// Depth Stencil
-		bool DepthTestEnable = true;
-		bool DepthWriteEnable = true;
+		bool DepthTestEnable = false;
+		bool DepthWriteEnable = false;
 		nvrhi::ComparisonFunc DepthFunc = nvrhi::ComparisonFunc::Less;
 	};
 
@@ -28,12 +28,15 @@ namespace Eppo
 	public:
 		Pipeline(PipelineSpecification spec);
 
+		auto Resize(uint32_t width, uint32_t height) -> void;
+		[[nodiscard]] auto GetWidth() const -> uint32_t { return m_Specification.Framebuffer->GetWidth(); }
+		[[nodiscard]] auto GetHeight() const -> uint32_t { return m_Specification.Framebuffer->GetHeight(); }
+
 		[[nodiscard]] constexpr auto GetSpecification() const -> const PipelineSpecification& { return m_Specification; }
 		[[nodiscard]] auto GetPipeline() const -> nvrhi::GraphicsPipelineHandle { return m_PipelineHandle; }
 
 	private:
 		PipelineSpecification m_Specification;
-
 		nvrhi::GraphicsPipelineHandle m_PipelineHandle = nullptr;
 	};
 }

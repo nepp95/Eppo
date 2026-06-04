@@ -6,12 +6,17 @@ namespace Eppo
 	{
 	public:
 		UUID();
+		UUID(uint64_t id);
 		~UUID() = default;
 
+		auto operator==(const UUID& other) const -> bool { return m_UUID == other.m_UUID; }
+		auto operator!=(const UUID& other) const -> bool { return !(*this == other); }
+		auto operator<(const UUID& other) const -> bool { return m_UUID < other.m_UUID; }
 		operator bool() const { return m_UUID != 0; }
+		explicit operator uint64_t() const { return m_UUID; }
 
 	private:
-		uint64_t m_UUID;
+		uint64_t m_UUID = 0;
 	};
 }
 

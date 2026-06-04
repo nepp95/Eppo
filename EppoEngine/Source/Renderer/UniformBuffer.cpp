@@ -13,6 +13,8 @@ namespace Eppo
 
 	auto UniformBuffer::SetData(const void* data, uint64_t size, uint64_t offset /*= 0*/) -> void
 	{
+		EP_PROFILE_FN("UniformBuffer::SetData")
+
 		const auto device = DeviceManager::Get()->GetDevice();
 		const auto cmd = device->createCommandList();
 

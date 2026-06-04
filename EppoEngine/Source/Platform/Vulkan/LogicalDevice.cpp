@@ -32,33 +32,39 @@ namespace Eppo
 		}
 
 		// Create device
-		const auto& deviceFeatures = physicalDevice->GetDeviceFeatures();
+		auto& deviceFeatures = physicalDevice->GetDeviceFeatures();
 
-		VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
-			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+		VkPhysicalDeviceVulkan11Features features11{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+		};
+
+		VkPhysicalDeviceVulkan12Features features12{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+			.pNext = &features11,
+			.shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+			.descriptorBindingPartiallyBound = VK_TRUE,
+			.runtimeDescriptorArray = VK_TRUE,
+			.timelineSemaphore = VK_TRUE,
+			.bufferDeviceAddress = VK_TRUE,
+		};
+
+		VkPhysicalDeviceVulkan13Features features13{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+			.pNext = &features12,
+			.synchronization2 = VK_TRUE,
 			.dynamicRendering = VK_TRUE,
 		};
 
-		VkPhysicalDeviceSynchronization2Features synchronizationFeatures{
-			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-			.pNext = &dynamicRenderingFeatures,
-			.synchronization2 = VK_TRUE,
-		};
-
-		VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphoreFeatures{
-			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-			.pNext = &synchronizationFeatures,
-			.timelineSemaphore = VK_TRUE,
-		};
+		deviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		deviceFeatures.pNext = &features13;
 
 		VkDeviceCreateInfo deviceInfo{
 			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			.pNext = &timelineSemaphoreFeatures,
+			.pNext = &deviceFeatures,
 			.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size()),
 			.pQueueCreateInfos = queueInfos.data(),
 			.enabledExtensionCount = static_cast<uint32_t>(g_DeviceExtensions.size()),
 			.ppEnabledExtensionNames = g_DeviceExtensions.data(),
-			.pEnabledFeatures = &deviceFeatures,
 		};
 
 		if (g_EnableValidationLayers)

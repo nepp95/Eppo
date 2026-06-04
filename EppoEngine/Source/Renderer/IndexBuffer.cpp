@@ -20,6 +20,8 @@ namespace Eppo
 
 	auto IndexBuffer::SetData(const void* data, uint64_t size, uint64_t offset) -> void
 	{
+		EP_PROFILE_FN("IndexBuffer::SetData")
+
 		const auto device = DeviceManager::Get()->GetDevice();
 		const auto cmd = device->createCommandList();
 
@@ -31,13 +33,13 @@ namespace Eppo
 		}
 
 		cmd->open();
-		cmd->writeBuffer(m_Buffer, data, m_Size);
+		cmd->writeBuffer(m_Buffer, data, m_Size, offset);
 		cmd->close();
 
 		device->executeCommandList(cmd);
 	}
 
-	auto IndexBuffer::CreateBuffer() -> void
+	auto IndexBuffer::CreateBuffer(bool isResize) -> void
 	{
 		const auto device = DeviceManager::Get()->GetDevice();
 
@@ -52,18 +54,28 @@ namespace Eppo
 		if (m_CpuWritable)
 			bufferDesc.cpuAccess = nvrhi::CpuAccessMode::Write;
 
-		m_Buffer = device->createBuffer(bufferDesc);
+		auto buffer = device->createBuffer(bufferDesc);
+		if (isResize)
+		{
+			const nvrhi::CommandListHandle cmdList = device->createCommandList();
+			cmdList->open();
+			cmdList->copyBuffer(buffer, 0, m_Buffer, 0, m_Buffer->getDesc().byteSize);
+			cmdList->close();
+			device->executeCommandList(cmdList);
+		}
+
+		m_Buffer = buffer;
 	}
 
 	auto IndexBuffer::CreateCube() -> Ref<IndexBuffer>
 	{
-		std::array indices = {
-			0, 2, 1, 0, 3, 2,
-			4, 6, 5, 4, 7, 6,
-			8, 10, 9, 8, 11, 10,
-			12, 14, 13, 12, 15, 14,
-			16, 18, 17, 16, 19, 18,
-			20, 22, 21, 20, 23, 22
+		constexpr std::array indices = {
+			0, 1, 2, 0, 2, 3,
+			4, 5, 6, 4, 6, 7,
+			8, 9, 10, 8, 10, 11,
+			12, 13, 14, 12, 14, 15,
+			16, 17, 18, 16, 18, 19,
+			20, 21, 22, 20, 22, 23
 		};
 
 		return CreateRef<IndexBuffer>(indices.data(), indices.size() * sizeof(uint32_t));

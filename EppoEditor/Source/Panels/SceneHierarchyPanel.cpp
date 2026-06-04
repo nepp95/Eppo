@@ -6,7 +6,7 @@ namespace Eppo
 {
 	auto SceneHierarchyPanel::RenderGui() -> void
 	{
-		ImGui::Begin("Scene Hierarchy");
+		ScopedBegin scopedBegin("Scene Hierarchy");
 
 		const auto& scene = GetSceneContext();
 		for (const auto e : scene->m_Registry.view<entt::entity>())
@@ -25,8 +25,6 @@ namespace Eppo
 
 			ImGui::EndPopup();
 		}
-
-		ImGui::End();
 	}
 
 	auto SceneHierarchyPanel::DrawEntityNode(Entity entity) -> void

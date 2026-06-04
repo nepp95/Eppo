@@ -40,7 +40,12 @@ namespace Eppo
 				pipelineDesc.addBindingLayout(layout);
 		}
 
-		m_PipelineHandle = device->createGraphicsPipeline(pipelineDesc, m_Specification.Framebuffer->GetFramebuffer());
+		m_PipelineHandle = device->createGraphicsPipeline(pipelineDesc, m_Specification.Framebuffer->GetFramebuffer()->getFramebufferInfo());
 		EP_ASSERT(m_PipelineHandle);
+	}
+
+	auto Pipeline::Resize(uint32_t width, uint32_t height) -> void
+	{
+		m_Specification.Framebuffer->Resize(width, height);
 	}
 }

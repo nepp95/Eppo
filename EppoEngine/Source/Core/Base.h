@@ -1,9 +1,19 @@
 #pragma once
 
+#include "Core/Log.h"
+
+#include <tracy/Tracy.hpp>
+
 #include <csignal>
 #include <memory>
 
-#include "Core/Log.h"
+#define EP_TRACK_MEMORY
+#if defined(EP_TRACK_MEMORY)
+	[[nodiscard]] void* operator new(size_t size);
+	[[nodiscard]] void* operator new[](size_t size);
+	void operator delete(void* block);
+	void operator delete[](void* block);
+#endif
 
 namespace Eppo
 {
@@ -22,6 +32,14 @@ namespace Eppo
 			}
 		#endif
 	}
+
+	#if defined(TRACY_ENABLE)
+		#define EP_FRAME_MARK FrameMark
+		#define EP_PROFILE_FN(name) ZoneScopedN(name)
+	#else
+		#define EP_FRAME_MARK
+		#define EP_PROFILE_FN(name)
+	#endif
 
 	template<typename T>
 	using ScopedPtr = std::unique_ptr<T>;

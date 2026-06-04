@@ -120,6 +120,10 @@ namespace Eppo
 				if (hash != cacheHash)
 					verified = false;
 			}
+			else
+			{
+				verified = false;
+			}
 		}
 
 		if (verified)
@@ -223,7 +227,6 @@ namespace Eppo
 
 		Log::Info("Stage: {}", nvrhi::utils::ShaderStageToString(type));
 
-
 		if (!resources.stage_inputs.empty() && type == nvrhi::ShaderType::Vertex)
 		{
 			Log::Info("\tInputs:");
@@ -263,7 +266,7 @@ namespace Eppo
 			const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.sampler;
 
 			m_PushConstants.Binding = 0;
-			m_PushConstants.Size = bufferSize;
+			m_PushConstants.Size = static_cast<uint32_t>(bufferSize);
 			m_PushConstants.Stage = m_HasPushConstants ? nvrhi::ShaderType::All : type;
 			m_HasPushConstants = true;
 		}
@@ -316,7 +319,12 @@ namespace Eppo
 				const auto& bufferType = compiler.get_type(resource.base_type_id);
 				const uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.shaderResource;
-			
+				
+				auto& spirvType = compiler.get_type(resource.type_id);
+				uint32_t arraySize = 1;
+				if (!spirvType.array.empty())
+					arraySize = spirvType.array[0];
+
 				bool bindingExists = false;
 				if (m_ShaderResources.contains(set))
 				{
@@ -336,6 +344,7 @@ namespace Eppo
 					ShaderResourceBinding& shaderResource = m_ShaderResources[set].emplace_back();
 					shaderResource.Name = resource.name;
 					shaderResource.Binding = binding;
+					shaderResource.ArraySize = arraySize;
 					shaderResource.Stage = type;
 					shaderResource.Type = nvrhi::ResourceType::Texture_SRV;
 

@@ -60,6 +60,13 @@ namespace Eppo
 
 	auto Scene::RenderScene(const Ref<SceneRenderer>& sceneRenderer) -> void
 	{
-
+		const auto view = m_Registry.view<MeshComponent, TransformComponent>();
+		for (const auto& entity : view)
+		{
+			if (auto [transformComponent, meshComponent] = view.get<TransformComponent, MeshComponent>(entity); meshComponent.MeshHandle)
+			{
+				sceneRenderer->SubmitMesh(meshComponent.MeshHandle, transformComponent.GetTransform());
+			}
+		}
 	}
 }

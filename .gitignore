@@ -5,4 +5,8 @@
 
 # Build / Cache
 /build
-/EppoEditor/Resources/Shaders/Bin
+/EppoEditor/Resources/Shaders/Cache
+
+# Log files
+latest.log
+previous.log

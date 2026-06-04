@@ -35,7 +35,8 @@ namespace Eppo
 		FramebufferAttachmentSpecification Attachments;
 		
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-		float DepthClearValue = 0.0f;
+		float DepthClearValue = 1.0f;
+		uint32_t StencilClearValue = 0;
 		bool ClearColorOnLoad = false;
 		bool ClearDepthOnLoad = false;
 
@@ -50,11 +51,17 @@ namespace Eppo
 	public:
 		Framebuffer(FramebufferSpecification spec);
 
+		auto Resize(uint32_t width, uint32_t height) -> void;
+
 		[[nodiscard]] auto GetFramebuffer() const -> nvrhi::FramebufferHandle { return m_Framebuffer; }
-		
+		[[nodiscard]] auto GetFinalImage() const -> const Ref<Image>& { return m_Images.at(0); }
+
 		[[nodiscard]] constexpr auto GetSpecification() const -> const FramebufferSpecification& { return m_Specification; }
 		[[nodiscard]] constexpr auto GetWidth() const -> uint32_t { return m_Width; }
 		[[nodiscard]] constexpr auto GetHeight() const -> uint32_t { return m_Height; }
+
+	private:
+		auto CreateImages(nvrhi::FramebufferDesc& desc) -> void;
 
 	private:
 		FramebufferSpecification m_Specification;
