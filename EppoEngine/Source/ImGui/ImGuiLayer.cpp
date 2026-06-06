@@ -74,7 +74,6 @@ namespace Eppo
 
 		if (m_BlockEvents)
 		{
-			EventType type = e.GetEventType();
 			const ImGuiIO& io = ImGui::GetIO();
 			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
 			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;

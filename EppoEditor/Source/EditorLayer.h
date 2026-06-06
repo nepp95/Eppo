@@ -17,11 +17,19 @@ namespace Eppo
 		auto OnEvent(Event& e) -> void override;
 		
 	private:
+		auto NewScene() -> void;
+		auto OpenScene() -> bool;
+		auto OpenScene(const std::filesystem::path& path) -> bool;
+		auto SaveScene() -> bool;
+		auto SaveSceneAs() -> bool;
+
+	private:
 		Ref<PanelManager> m_PanelManager = nullptr;
 
 		Ref<Scene> m_ActiveScene = nullptr;
 		Ref<Scene> m_EditorScene = nullptr;
 		Ref<SceneRenderer> m_SceneRenderer = nullptr;
+		std::filesystem::path m_ActiveScenePath;
 
 		ScopedPtr<EditorCamera> m_EditorCamera = nullptr;
 

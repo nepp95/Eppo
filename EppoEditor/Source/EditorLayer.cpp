@@ -103,6 +103,15 @@ namespace Eppo
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("New Scene", "CTRL+N"))
+					NewScene();
+
+				if (ImGui::MenuItem("Save Scene", "CTRL+S"))
+					SaveScene();
+
+				if (ImGui::MenuItem("Open Scene", "CTRL+O"))
+					OpenScene();
+
 				if (ImGui::MenuItem("Close"))
 					Application::Get().Close();
 
@@ -142,5 +151,59 @@ namespace Eppo
 
 	auto EditorLayer::OnEvent(Event& e) -> void
 	{
+	}
+
+	auto EditorLayer::NewScene() -> void
+	{
+		m_EditorScene = CreateRef<Scene>();
+		m_ActiveScene = m_EditorScene;
+		m_ActiveScenePath = std::filesystem::path();
+		m_PanelManager->SetSceneContext(m_ActiveScene);
+	}
+
+	auto EditorLayer::OpenScene() -> bool
+	{
+		return true;
+	}
+
+	auto EditorLayer::OpenScene(const std::filesystem::path& path) -> bool
+	{
+		if (path.extension().string() != ".epscene")
+		{
+			Log::Error("Could not load '{}' because it is not a scene file!", path);
+			return false;
+		}
+
+		const auto scene = CreateRef<Scene>();
+		const SceneSerializer serializer(scene);
+
+		if (serializer.Deserialize(path))
+		{
+			m_EditorScene = scene;
+			m_ActiveScene = m_EditorScene;
+			m_ActiveScenePath = path;
+			m_PanelManager->SetSceneContext(m_ActiveScene);
+		}
+		else
+		{
+			Log::Error("Failed to deserialize scene '{}'!", path);
+			return false;
+		}
+
+		return true;
+	}
+
+	auto EditorLayer::SaveScene() -> bool
+	{
+		if (m_ActiveScenePath.empty())
+			return SaveSceneAs();
+
+		const SceneSerializer serializer(m_ActiveScene);
+		return serializer.Serialize(m_ActiveScenePath);
+	}
+
+	auto EditorLayer::SaveSceneAs() -> bool
+	{
+		return true;
 	}
 }

@@ -37,10 +37,13 @@ namespace Eppo
 
 			case RendererAPI::Vulkan:
 				return CreateScopedPtr<DeviceManagerVK>(window, params);
-		}
 
-		EP_ASSERT(false);
-		return nullptr;
+			default:
+			{
+				EP_ASSERT(false);
+				return nullptr;
+			}
+		}
 	}
 
 	auto DeviceManager::WaitIdle() const -> bool
@@ -54,6 +57,6 @@ namespace Eppo
 	}
 
 	DeviceManager::DeviceManager(const Ref<Window>& window, const DeviceParams& params)
-		: m_Window(window), m_Params(params)
+		: m_Params(params), m_Window(window)
 	{}
 }

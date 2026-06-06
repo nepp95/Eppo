@@ -21,6 +21,7 @@ namespace Eppo
 		VK_GOOGLE_USER_TYPE_EXTENSION_NAME
 	};
 
+	[[maybe_unused]]
 	static VKAPI_ATTR auto VKAPI_CALL VulkanDebugCallback(
 		const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, const VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData
@@ -73,6 +74,7 @@ namespace Eppo
 		return false;
 	}
 
+	[[maybe_unused]]
 	static auto CreateDebugUtilsMessengerEXT(
 		VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger
 	) -> VkResult
@@ -85,6 +87,7 @@ namespace Eppo
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
+	[[maybe_unused]]
 	static auto DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) -> void
 	{
 		if (const auto fn = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT")); fn != nullptr)

@@ -7,6 +7,8 @@ namespace Eppo
 	class PropertyPanel : public Panel
 	{
 	public:
+		virtual ~PropertyPanel() = default;
+
 		auto RenderGui() -> void override;
 
 	private:

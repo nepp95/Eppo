@@ -6,7 +6,7 @@ project(EppoEngine LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (MSVC)
+if (MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_options("/MP")
 endif ()
 

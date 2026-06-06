@@ -120,7 +120,6 @@ namespace Eppo
 			p.FirstIndex = static_cast<uint32_t>(indices.size());
 
 			uint64_t vertexCount = 0;
-			uint64_t indexCount = 0;
 
 			const auto& mp = mesh.primitives[i];
 			const float* positionData = nullptr;

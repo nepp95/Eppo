@@ -51,8 +51,7 @@ namespace Eppo
 
 			bool operator<(const DrawKey& other) const
 			{
-				if (ID < other.ID)
-					return true;
+				return ID < other.ID;
 			}
 		};
 

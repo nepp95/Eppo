@@ -139,7 +139,7 @@ namespace Eppo
 		{
 			const auto& images = drawCmd.Mesh->GetImages();
 
-			for (size_t i = 0; i < images.size(); i++)
+			for (uint32_t i = 0; i < images.size(); i++)
 			{
 				const auto& image = images.at(i);
 				device->writeDescriptorTable(descriptorTable, nvrhi::BindingSetItem::Texture_SRV(i + imageOffset, image->GetTexture(), image->GetFormat()));

@@ -11,8 +11,8 @@
 #if defined(EP_TRACK_MEMORY)
 	[[nodiscard]] void* operator new(size_t size);
 	[[nodiscard]] void* operator new[](size_t size);
-	void operator delete(void* block);
-	void operator delete[](void* block);
+	void operator delete(void* block) noexcept;
+	void operator delete[](void* block) noexcept;
 #endif
 
 namespace Eppo

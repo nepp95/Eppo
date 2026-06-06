@@ -7,6 +7,8 @@ namespace Eppo
 	class SceneHierarchyPanel : public Panel
 	{
 	public:
+		virtual ~SceneHierarchyPanel() = default;
+
 		auto RenderGui() -> void override;
 
 	private:

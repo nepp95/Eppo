@@ -146,7 +146,6 @@ namespace Eppo
 
 		const auto& dm = DeviceManager::Get();
 		const auto device = dm->GetDevice();
-		const auto& io = ImGui::GetIO();
 		const uint32_t frameIndex = dm->GetCurrentBackBufferIndex();
 		EP_ASSERT(frameIndex < dm->GetParams().MaxFramesInFlight);
 

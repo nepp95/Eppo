@@ -25,4 +25,6 @@
 #include "Scene/Entity.h"
 #include "Scene/Scene.h"
 
+#include "Utility/Filesystem.h"
+#include "Utility/Json.h"
 #include "Utility/Random.h"

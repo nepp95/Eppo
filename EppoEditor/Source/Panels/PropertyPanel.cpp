@@ -130,7 +130,7 @@ namespace Eppo
 		{
 			if (component.MeshHandle)
 			{
-				ImGui::TextDisabled(component.MeshHandle->GetName().c_str());
+				ImGui::TextDisabled("%s", component.MeshHandle->GetName().c_str());
 				ImGui::SameLine();
 				if (ImGui::Button("X"))
 					component.MeshHandle = nullptr;

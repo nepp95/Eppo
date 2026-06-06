@@ -16,13 +16,13 @@
 		return block;
 	}
 
-	void operator delete(void* block)
+	void operator delete(void* block) noexcept
 	{
 		TracyFreeS(block, 32);
 		free(block);
 	}
 
-	void operator delete[](void* block)
+	void operator delete[](void* block) noexcept
 	{
 		TracyFreeS(block, 32);
 		free(block);

@@ -93,7 +93,6 @@ namespace Eppo
 		EP_PROFILE_FN("Swapchain::Present")
 
 		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
-		VkDevice device = dm->GetLogicalDevice()->GetNative();
 		nvrhi::vulkan::IDevice* vkNvrhiDevice(dm->GetDevice()->getNativeObject(nvrhi::ObjectTypes::Nvrhi_VK_Device));
 
 		const auto& semaphore = m_PresentSemaphores.at(m_SwapchainIndex);
@@ -229,10 +228,9 @@ namespace Eppo
 
 	auto Swapchain::Resize(uint32_t width, uint32_t height) -> void
 	{
-		const auto& dm = std::static_pointer_cast<DeviceManagerVK>(DeviceManager::Get());
-		VkDevice device = dm->GetLogicalDevice()->GetNative();
+		const auto device = DeviceManager::Get()->GetDevice();
 
-		dm->GetDevice()->waitForIdle();
+		device->waitForIdle();
 		CreateSwapchain(width, height);
 	}
 
