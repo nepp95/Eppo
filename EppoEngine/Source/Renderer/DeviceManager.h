@@ -75,9 +75,7 @@ namespace Eppo
 		bool EnableComputeQueue = true;
 		bool EnableTransferQueue = false;
 
-		#if defined(EP_HAS_VULKAN)
 		std::vector<const char *> RequiredVulkanInstanceExtensions;
-		#endif
 	};
 
 	class DeviceManager
