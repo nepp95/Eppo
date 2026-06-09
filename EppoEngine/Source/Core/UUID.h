@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <unordered_map>
+
 namespace Eppo
 {
 	class UUID
