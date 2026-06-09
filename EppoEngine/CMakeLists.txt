@@ -10,13 +10,17 @@ add_library(EppoEngine STATIC ${SOURCES})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
-    target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_WINDOWS EP_HAS_DX12 EP_HAS_VULKAN)
+    target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_WINDOWS)
     target_compile_options(EppoEngine PUBLIC /utf-8)
     target_include_directories(EppoEngine PUBLIC $ENV{VULKAN_SDK}/Include)
+    target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/Lib")
+    target_link_libraries(EppoEngine PRIVATE $<$<CONFIG:Debug>:spirv-cross-cored> $<$<CONFIG:RelWithDebInfo>:spirv-cross-core> $<$<CONFIG:Dist>:spirv-cross-core>)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
-    target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_LINUX EP_HAS_VULKAN)
+    target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_LINUX)
     target_include_directories(EppoEngine PUBLIC $ENV{VULKAN_SDK}/include)
+    target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/lib")
+    target_link_libraries(EppoEngine PRIVATE spirv-cross-core)
 else()
     message(FATAL_ERROR "Unsupported platform '${CMAKE_SYSTEM_NAME}' detected!")
 endif()
@@ -26,12 +30,10 @@ target_compile_definitions(EppoEngine PUBLIC
     $<$<CONFIG:Debug>:TRACY_ENABLE> $<$<CONFIG:RelWithDebInfo>:TRACY_ENABLE>
 )
 target_include_directories(EppoEngine PUBLIC ${INCLUDE_DIRS})
-target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/Lib")
 target_link_libraries(EppoEngine PUBLIC EnTT::EnTT glm::glm imgui::imgui nvrhi spdlog::spdlog Tracy::TracyClient Vulkan::Vulkan)
 target_link_libraries(EppoEngine PRIVATE
     glfw
     Vulkan::dxc_lib
-    $<$<CONFIG:Debug>:spirv-cross-cored> $<$<CONFIG:RelWithDebInfo>:spirv-cross-core> $<$<CONFIG:Dist>:spirv-cross-core>
 )
 target_precompile_headers(EppoEngine PRIVATE "Source/pch.h")
 
