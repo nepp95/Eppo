@@ -23,7 +23,7 @@ endif()
 
 target_compile_definitions(EppoEngine PUBLIC
     $<$<CONFIG:Debug>:EP_DEBUG> $<$<CONFIG:RelWithDebInfo>:EP_RELEASE> $<$<CONFIG:Release>:EP_DIST>
-    $<$<CONFIG:Debug>:TRACY_ENABLE> $<$<CONFIG:RelWithDebInfo>:TRACY_ENABLE> $<$<CONFIG:Release>:EP_DIST>
+    $<$<CONFIG:Debug>:TRACY_ENABLE> $<$<CONFIG:RelWithDebInfo>:TRACY_ENABLE>
 )
 target_include_directories(EppoEngine PUBLIC ${INCLUDE_DIRS})
 target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/Lib")

@@ -20,7 +20,6 @@ option(BUILD_RUNTIME "Build runtime" ON)
 
 # Get dependencies
 include(CMake/Dependencies.cmake)
-include(CMake/CompileShader.cmake)
 
 # Targets
 add_subdirectory(EppoEngine)
