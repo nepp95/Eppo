@@ -7,7 +7,7 @@ namespace Eppo
 {
 	namespace
 	{
-		constexpr const char* CONTENT_BROWSER_PANEL = "Content Browser";
+		//constexpr const char* CONTENT_BROWSER_PANEL = "Content Browser";
 		constexpr const char* PROPERTY_PANEL = "Property";
 		constexpr const char* SCENE_HIERARCHY_PANEL = "Scene Hierarchy";
 	}

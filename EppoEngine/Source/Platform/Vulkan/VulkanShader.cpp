@@ -98,7 +98,6 @@ namespace Eppo
 	auto VulkanShader::CompileOrGetCache() -> void
 	{
 		const auto& dm = DeviceManager::Get();
-		const auto device = dm->GetDevice();
 
 		const std::filesystem::path cacheDir = FS::GetShaderCacheDirectory();
 		const std::filesystem::path vertPath = FS::GetResourcesDirectory() / "Shaders" / std::format("{}.vert", m_Specification.Name);
@@ -263,7 +262,6 @@ namespace Eppo
 			const auto& resource = resources.push_constant_buffers[0];
 			const auto& bufferType = compiler.get_type(resource.base_type_id);
 			const size_t bufferSize = compiler.get_declared_struct_size(bufferType);
-			const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.sampler;
 
 			m_PushConstants.Binding = 0;
 			m_PushConstants.Size = static_cast<uint32_t>(bufferSize);
@@ -277,7 +275,6 @@ namespace Eppo
 
 			for (const auto& resource : resources.uniform_buffers)
 			{
-				const auto& bufferType = compiler.get_type(resource.base_type_id);
 				const uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding)  - vulkanOffsets.constantBuffer;
 
@@ -316,7 +313,6 @@ namespace Eppo
 
 			for (const auto& resource : resources.separate_images)
 			{
-				const auto& bufferType = compiler.get_type(resource.base_type_id);
 				const uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.shaderResource;
 				
@@ -361,7 +357,6 @@ namespace Eppo
 
 			for (const auto& resource : resources.separate_samplers)
 			{
-				const auto& bufferType = compiler.get_type(resource.base_type_id);
 				const uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 				const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.sampler;
 			

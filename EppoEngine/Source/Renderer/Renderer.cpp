@@ -9,7 +9,7 @@ namespace Eppo
 		m_ShaderLibrary.Load("imgui");
 	}
 
-	auto Renderer::GetShader(const std::string& name) const -> const Ref<Shader>&
+	auto Renderer::GetShader(const std::string& name) const -> Ref<Shader>
 	{
 		return m_ShaderLibrary.Get(name);
 	}

@@ -9,7 +9,7 @@ namespace Eppo
 	public:
 		Renderer();
 
-		[[nodiscard]] auto GetShader(const std::string& name) const -> const Ref<Shader>&;
+		[[nodiscard]] auto GetShader(const std::string& name) const -> Ref<Shader>;
 
 	private:
 		ShaderLibrary m_ShaderLibrary;

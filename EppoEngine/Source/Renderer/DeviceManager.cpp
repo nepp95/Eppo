@@ -39,11 +39,11 @@ namespace Eppo
 				return CreateScopedPtr<DeviceManagerVK>(window, params);
 
 			default:
-			{
-				EP_ASSERT(false);
-				return nullptr;
-			}
+				break;
 		}
+
+		EP_ASSERT(false);
+		return nullptr;
 	}
 
 	auto DeviceManager::WaitIdle() const -> bool
