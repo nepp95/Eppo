@@ -15,6 +15,7 @@
 #include "Event/ApplicationEvent.h"
 #include "Event/KeyEvent.h"
 
+#include "ImGui/FileDialog.h"
 #include "ImGui/ImExt.h"
 #include "ImGui/ScopedBegin.h"
 

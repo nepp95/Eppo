@@ -6,6 +6,8 @@
 #include "Event/MouseEvent.h"
 
 #include <GLFW/glfw3.h>
+#include <nfd.hpp>
+#include <nfd_glfw3.h>
 
 namespace Eppo
 {
@@ -21,7 +23,7 @@ namespace Eppo
 		: m_Width(width), m_Height(height)
 	{
 		// Setup glfw
-		const int success = glfwInit();
+		int success = glfwInit();
 		EP_ASSERT(success, "GLFW failed to initialize!");
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -34,6 +36,10 @@ namespace Eppo
 		// Create window
 		Log::Info("Creating window of size {}x{}", m_Width, m_Height);
 		m_Window = glfwCreateWindow(static_cast<int>(m_Width), static_cast<int>(m_Height), "EppoEngine", nullptr, nullptr);
+
+		// Init file dialogs
+		success = NFD::Init();
+		EP_ASSERT(success == NFD_OKAY);
 
 		// Set event callbacks
 		glfwSetWindowUserPointer(m_Window, &m_EventCallback);
@@ -134,6 +140,7 @@ namespace Eppo
 
 	auto Window::Shutdown() -> void
 	{
+		NFD::Quit();
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}

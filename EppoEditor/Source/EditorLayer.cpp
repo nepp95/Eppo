@@ -163,7 +163,14 @@ namespace Eppo
 
 	auto EditorLayer::OpenScene() -> bool
 	{
-		return true;
+		const auto path = FileDialog::OpenFile({
+			{ "EppoEngine Scene", "epscene" }
+		}, FS::GetRootDirectory());
+
+		if (path.empty())
+			return false;
+
+		return OpenScene(path);
 	}
 
 	auto EditorLayer::OpenScene(const std::filesystem::path& path) -> bool
@@ -204,6 +211,17 @@ namespace Eppo
 
 	auto EditorLayer::SaveSceneAs() -> bool
 	{
+		const auto path = FileDialog::SaveFile({
+			{ "EppoEngine Scene", "epscene" }
+		}, FS::GetRootDirectory());
+
+		if (path.empty())
+			return false;
+
+		m_ActiveScenePath = path;
+		const SceneSerializer serializer(m_ActiveScene);
+		serializer.Serialize(m_ActiveScenePath);
+
 		return true;
 	}
 }
