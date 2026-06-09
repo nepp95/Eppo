@@ -10,6 +10,8 @@ namespace Eppo
 
 	#if !defined(EP_DIST)
 		constexpr bool g_EnableValidationLayers = true;
+	#else
+		constexpr bool g_EnableValidationLayers = false;
 	#endif
 
 	constexpr uint32_t g_MaxFramesInFlight = 2;
