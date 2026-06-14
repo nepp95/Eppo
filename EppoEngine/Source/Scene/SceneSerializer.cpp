@@ -22,6 +22,7 @@ namespace Eppo
 
 		json data;
 		data["Scene"]["Name"] = sceneName;
+		data["Scene"]["Handle"] = m_SceneContext->Handle;
 		auto entities = json::array();
 
 		m_SceneContext->m_Registry.sort<IDComponent>(

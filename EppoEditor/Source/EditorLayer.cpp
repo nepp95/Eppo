@@ -3,6 +3,8 @@
 #include "Panels/PropertyPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 
+#include <imgui_stdlib.h>
+
 namespace Eppo
 {
 	namespace
@@ -21,12 +23,12 @@ namespace Eppo
 
 		m_EditorCamera = CreateScopedPtr<EditorCamera>(glm::vec3(-10.0f, 1.0f, 0.0f), 0.0f, 0.0f);
 
-		m_ActiveScene = CreateRef<Scene>();
-		auto testEntity = m_ActiveScene->CreateEntity("Test");
-		auto mesh = CreateRef<Mesh>("Resources/Meshes/main_sponza/NewSponza_Main_glTF_003.gltf");
-		testEntity.AddComponent<MeshComponent>(mesh);
+		if (!OpenProject())
+		{
+			m_ActiveScene = CreateRef<Scene>();
+			m_PanelManager->SetSceneContext(m_ActiveScene);
+		}
 
-		m_PanelManager->SetSceneContext(m_ActiveScene);
 		m_SceneRenderer = CreateRef<SceneRenderer>(m_ActiveScene, m_ViewportWidth, m_ViewportHeight);
 	}
 
@@ -103,13 +105,25 @@ namespace Eppo
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New Scene", "CTRL+N"))
+				if (ImGui::MenuItem("New Project", "CTRL+N"))
+					m_NewProjectPopup = true;
+
+				if (ImGui::MenuItem("Save Project", "CTRL+S"))
+					SaveProject();
+
+				if (ImGui::MenuItem("Open Project", "CTRL+O"))
+					OpenProject();
+
+				if (ImGui::MenuItem("Close Project"))
+					CloseProject();
+
+				if (ImGui::MenuItem("New Scene"))
 					NewScene();
 
-				if (ImGui::MenuItem("Save Scene", "CTRL+S"))
+				if (ImGui::MenuItem("Save Scene"))
 					SaveScene();
 
-				if (ImGui::MenuItem("Open Scene", "CTRL+O"))
+				if (ImGui::MenuItem("Open Scene"))
 					OpenScene();
 
 				if (ImGui::MenuItem("Close"))
@@ -120,6 +134,16 @@ namespace Eppo
 
 			ImGui::EndMenuBar();
 		}
+
+		// Popups
+		if (m_NewProjectPopup)
+		{
+			constexpr ImGuiPopupFlags popupFlags = ImGuiPopupFlags_NoOpenOverExistingPopup;
+			ImGui::OpenPopup("New Project", popupFlags);
+			m_NewProjectPopup = false;
+		}
+
+		UI_NewProjectPopup();
 
 		// Scene render
 		m_SceneRenderer->RenderGui();
@@ -151,6 +175,135 @@ namespace Eppo
 
 	auto EditorLayer::OnEvent(Event& e) -> void
 	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(std::bind_front(&EditorLayer::OnKeyPressed, this));
+	}
+
+	auto EditorLayer::OnKeyPressed(const KeyPressedEvent& e) -> bool
+	{
+		if (e.IsRepeat())
+			return false;
+
+		const bool alt = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (e.GetKeyCode())
+		{
+			case Key::N:
+			{
+				if (control)
+					m_NewProjectPopup = true;
+			}
+
+			case Key::O:
+			{
+				if (control)
+					OpenProject();
+				break;
+			}
+
+			case Key::S:
+			{
+				if (control)
+					SaveProject();
+				break;
+			}
+		}
+
+		return false;
+	}
+
+	auto EditorLayer::CloseProject() -> void
+	{
+		SaveProject();
+
+		m_PanelManager->SetSceneContext(nullptr);
+		
+		if (Project::GetActive())
+			Project::SetActive(nullptr);
+
+		m_EditorScene = nullptr;
+		m_ActiveScene = nullptr;
+	}
+
+	auto EditorLayer::NewProject(const std::string& name) -> void
+	{
+		// Create project directory
+		const auto projectPath = FS::GetRootDirectory() / "Projects" / name;
+		FS::CreateDirectory(projectPath);
+
+		// Copy new project template
+		FS::Copy("Resources/Templates/NewProject", projectPath);
+
+		// Create directories
+		FS::CreateDirectory(projectPath / "Assets" / "Meshes");
+		FS::CreateDirectory(projectPath / "Assets" / "Scenes");
+
+		// Replace tokens
+		constexpr auto ReplaceToken = [](std::string& input, const char* token, const std::string& value) -> void
+		{
+			size_t pos = 0;
+			while ((pos = input.find(token, pos)) != std::string::npos)
+			{
+				input.replace(pos, strlen(token), value);
+				pos += strlen(token);
+			}
+		};
+
+		{
+			auto inputStr = FS::ReadText(projectPath / "project.epproj");
+			ReplaceToken(inputStr, "$PROJECT_NAME$", name);
+			FS::WriteText(projectPath / "project.epproj", inputStr, true);
+			FS::Move(projectPath / "project.epproj", projectPath / std::filesystem::path(name + ".epproj"));
+		}
+
+		OpenProject(projectPath / std::filesystem::path(name + ".epproj"));
+	}
+
+	auto EditorLayer::OpenProject() -> bool
+	{
+		const auto path = FileDialog::OpenFile({
+			{ "EppoEngine Project", "epproj" }
+		}, FS::GetRootDirectory());
+
+		if (path.empty())
+			return false;
+
+		return OpenProject(path);
+	}
+
+	auto EditorLayer::OpenProject(const std::filesystem::path& path) -> bool
+	{
+		if (path.extension().string() != ".epproj")
+		{
+			Log::Error("Could not load '{}' because it is not a project file!", path);
+			return false;
+		}
+
+		if (Project::GetActive())
+			CloseProject();
+
+		if (Project::Open(path))
+		{
+			const auto& projSpec = Project::GetActive()->GetSpecification();
+			if (projSpec.StartScene)
+				OpenScene(projSpec.StartScene);
+			else
+				NewScene();
+		}
+
+		return true;
+	}
+
+	auto EditorLayer::SaveProject() -> bool
+	{
+		SaveScene();
+
+		if (!Project::GetActive()->GetSpecification().StartScene)
+			Project::GetActive()->GetSpecification().StartScene = m_ActiveScene->Handle;
+
+		return Project::SaveActive();
 	}
 
 	auto EditorLayer::NewScene() -> void
@@ -188,7 +341,7 @@ namespace Eppo
 		{
 			m_EditorScene = scene;
 			m_ActiveScene = m_EditorScene;
-			m_ActiveScenePath = path;
+			m_ActiveScenePath = Project::GetAssetFilepath(path);
 			m_PanelManager->SetSceneContext(m_ActiveScene);
 		}
 		else
@@ -200,13 +353,33 @@ namespace Eppo
 		return true;
 	}
 
+	auto EditorLayer::OpenScene(AssetHandle handle) -> void
+	{
+		const auto& assetManager = Project::GetActive()->GetAssetManager();
+		m_EditorScene = std::static_pointer_cast<Scene>(assetManager->GetAsset(handle));
+		m_ActiveScene = m_EditorScene;
+		m_ActiveScenePath = Project::GetAssetFilepath(assetManager->GetMetadata(handle).Filepath);
+
+		m_PanelManager->SetSceneContext(m_ActiveScene);
+	}
+
 	auto EditorLayer::SaveScene() -> bool
 	{
-		if (m_ActiveScenePath.empty())
-			return SaveSceneAs();
+		bool saved = false;
 
-		const SceneSerializer serializer(m_ActiveScene);
-		return serializer.Serialize(m_ActiveScenePath);
+		if (m_ActiveScenePath.empty())
+			saved = SaveSceneAs();
+		else
+		{
+			const SceneSerializer serializer(m_ActiveScene);
+			saved = serializer.Serialize(m_ActiveScenePath);
+		}
+
+		const auto& assetManager = Project::GetActive()->GetAssetManager();
+		if (assetManager && !assetManager->HasAssetMetadata(m_ActiveScene->Handle))
+			assetManager->CreateAsset(m_ActiveScenePath, m_ActiveScene);
+
+		return saved;
 	}
 
 	auto EditorLayer::SaveSceneAs() -> bool
@@ -223,5 +396,50 @@ namespace Eppo
 		serializer.Serialize(m_ActiveScenePath);
 
 		return true;
+	}
+
+	auto EditorLayer::UI_NewProjectPopup() -> void
+	{
+		constexpr ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
+		if (ImGui::BeginPopupModal("New Project", nullptr, windowFlags))
+		{
+			static std::string projectName;
+
+			ImGui::Text("Project Name");
+			ImGui::InputText("##ProjectName", &projectName);
+
+			const auto projectPath = FS::GetRootDirectory() / "Projects" / projectName;
+			const bool projectExists = !projectName.empty() && FS::Exists(projectPath);
+
+			if (projectExists)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
+				ImGui::Text("Project name already exists!");
+				ImGui::PopStyleColor();
+			}
+			else if (!projectName.empty())
+			{
+				ImGui::Text("Project path: \n%s", projectPath.string().c_str());
+			}
+
+			if (ImGui::Button("Cancel", ImVec2(100, 30)))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::SameLine();
+
+			if (projectExists)
+				ImGui::BeginDisabled();
+
+			if (ImGui::Button("Create", ImVec2(100, 30)))
+			{
+				NewProject(projectName);
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (projectExists)
+				ImGui::EndDisabled();
+
+			ImGui::EndPopup();
+		}
 	}
 }

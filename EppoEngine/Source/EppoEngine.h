@@ -3,6 +3,7 @@
 #include "Core/Base.h"
 
 #include "Asset/Asset.h"
+#include "Asset/AssetMetadata.h"
 #include "Asset/AssetType.h"
 
 #include "Core/Application.h"
@@ -18,6 +19,8 @@
 #include "ImGui/FileDialog.h"
 #include "ImGui/ImExt.h"
 #include "ImGui/ScopedBegin.h"
+
+#include "Project/Project.h"
 
 #include "Renderer/Camera/EditorCamera.h"
 #include "Renderer/Renderer.h"

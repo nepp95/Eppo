@@ -17,11 +17,22 @@ namespace Eppo
 		auto OnEvent(Event& e) -> void override;
 		
 	private:
+		auto OnKeyPressed(const KeyPressedEvent& e) -> bool;
+
+		auto CloseProject() -> void;
+		auto NewProject(const std::string& name) -> void;
+		auto OpenProject() -> bool;
+		auto OpenProject(const std::filesystem::path& path) -> bool;
+		auto SaveProject() -> bool;
+
 		auto NewScene() -> void;
 		auto OpenScene() -> bool;
 		auto OpenScene(const std::filesystem::path& path) -> bool;
+		auto OpenScene(AssetHandle handle) -> void;
 		auto SaveScene() -> bool;
 		auto SaveSceneAs() -> bool;
+
+		auto UI_NewProjectPopup() -> void;
 
 	private:
 		Ref<PanelManager> m_PanelManager = nullptr;
@@ -43,5 +54,8 @@ namespace Eppo
 			Edit,
 			Play,
 		} m_SceneState = SceneState::Edit;
+
+		// Popups
+		bool m_NewProjectPopup = false;
 	};
 }

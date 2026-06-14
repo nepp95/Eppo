@@ -6,6 +6,7 @@ namespace Eppo
 	{
 		None = 0,
 		Mesh,
+		Scene,
 	};
 
 	namespace Utils
@@ -16,6 +17,8 @@ namespace Eppo
 				return AssetType::None;
 			if (assetType == "Mesh")
 				return AssetType::Mesh;
+			if (assetType == "Scene")
+				return AssetType::Scene;
 
 			EP_ASSERT(false);
 			return AssetType::None;
@@ -29,6 +32,8 @@ namespace Eppo
 					return "None";
 				case AssetType::Mesh:
 					return "Mesh";
+				case AssetType::Scene:
+					return "Scene";
 				default:
 				{
 					EP_ASSERT(false);

@@ -27,10 +27,7 @@ namespace Eppo
 
 		DrawComponent<TagComponent>(entity, [](auto& component)
 		{
-			std::string& tag = component.Tag;
-			std::string buffer = tag;
-			if (ImGui::InputText("##Tag", &buffer))
-				tag = buffer;
+			ImGui::InputText("##Tag", &component.Tag);
 		});
 
 		ImGui::SameLine();
@@ -155,6 +152,7 @@ namespace Eppo
 				{
 					if (ImGui::MenuItem("Cube"))
 					{
+						// TODO: Create cube once, add to asset manager on demand, reuse.
 						component.MeshHandle = Mesh::CreateCube();
 						ImGui::CloseCurrentPopup();
 					}
