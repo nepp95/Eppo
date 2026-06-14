@@ -12,6 +12,7 @@
 #include <queue>
 #include <random>
 #include <ranges>
+#include <shared_mutex>
 #include <string>
 #include <sstream>
 #include <thread>
