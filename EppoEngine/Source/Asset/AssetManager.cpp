@@ -94,12 +94,10 @@ namespace Eppo
         return asset;
     }
 
-    template<typename T>
-        requires(std::derived_from<T, Asset>)
-    auto AssetManager::GetAsset(AssetHandle handle, bool async) -> Ref<T>
+    auto AssetManager::Tick() -> void
     {
-        return std::static_pointer_cast<T>(GetAsset(handle, async));
     }
+
 	auto AssetManager::HasAssetMetadata(AssetHandle handle) const -> bool
 	{
         return m_AssetData.contains(handle);

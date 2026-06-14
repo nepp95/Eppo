@@ -15,9 +15,15 @@ namespace Eppo
 	public:
 		auto CreateAsset(const std::filesystem::path& path, const Ref<Asset>& existingAsset = nullptr) -> bool;
 		auto GetAsset(AssetHandle handle, bool async = false) -> Ref<Asset>;
+
 		template<typename T>
 			requires(std::derived_from<T, Asset>)
-		auto GetAsset(AssetHandle handle, bool async = false) -> Ref<T>;
+		auto GetAsset(AssetHandle handle, bool async = false) -> Ref<T>
+		{
+			return std::static_pointer_cast<T>(GetAsset(handle, async));
+		}
+
+		auto Tick() -> void;
 
 		[[nodiscard]] auto HasAssetMetadata(AssetHandle handle) const -> bool;
 		[[nodiscard]] auto IsAssetHandleValid(AssetHandle handle) const -> bool;
