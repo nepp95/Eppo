@@ -3,6 +3,7 @@
 #include "Asset/Asset.h"
 #include "Asset/AssetMetadata.h"
 
+#include <future>
 namespace Eppo
 {
 	class AssetManager
