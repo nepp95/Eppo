@@ -47,7 +47,7 @@ namespace Eppo
 
 		for (auto it = m_LayerStack.begin(); it != m_LayerStack.end();)
 		{
-			Ref layer = *it;
+			auto layer = *it;
 			layer->OnDetach();
 			it = m_LayerStack.erase(it);
 		}
