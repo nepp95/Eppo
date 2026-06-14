@@ -26,5 +26,6 @@ namespace Eppo
 	private:
 		std::map<AssetHandle, AssetMetadata> m_AssetData;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_LoadedAssets;
+		mutable std::shared_mutex m_Mutex;
 	};
 }
