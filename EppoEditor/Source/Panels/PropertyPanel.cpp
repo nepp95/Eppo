@@ -142,8 +142,8 @@ namespace Eppo
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESH_ASSET"))
 					{
-						Ref<Mesh> handle = *reinterpret_cast<Ref<Mesh>*>(payload->Data);
-						component.MeshHandle = handle;
+						/*Ref<Mesh> handle = *reinterpret_cast<Ref<Mesh>*>(payload->Data);
+						component.MeshHandle = handle;*/
 					}
 					ImGui::EndDragDropTarget();
 				}

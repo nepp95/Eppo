@@ -64,6 +64,15 @@ namespace Eppo
 		return s_AssetExportFns.at(metadata.Type)(asset, path);
 	}
 
+	auto AssetImporter::ExportMesh(const Ref<Asset>& asset, const std::filesystem::path& path) -> bool
+	{
+		EP_PROFILE_FN("AssetImporter::ExportMesh");
+
+		const Ref<Mesh>& mesh = std::static_pointer_cast<Mesh>(asset);
+
+		return false;
+	}
+
 	auto AssetImporter::ExportScene(const Ref<Asset>& asset, const std::filesystem::path& path) -> bool
 	{
 		EP_PROFILE_FN("AssetImporter::ExportScene");
