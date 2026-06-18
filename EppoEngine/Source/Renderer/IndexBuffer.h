@@ -4,6 +4,8 @@
 
 namespace Eppo
 {
+	enum class MeshPrimitiveType;
+
 	class IndexBuffer
 	{
 	public:
@@ -19,7 +21,7 @@ namespace Eppo
 		[[nodiscard]] constexpr auto GetIndexCount() const -> uint64_t { return m_Size / sizeof(uint32_t); }
 		[[nodiscard]] constexpr auto GetSize() const -> uint64_t { return m_Size; };
 
-		static auto CreateCube() -> Ref<IndexBuffer>;
+		static auto CreateMeshPrimitive(MeshPrimitiveType type) -> Ref<IndexBuffer>;
 
 	private:
 		auto CreateBuffer(bool isResize = false) -> void;

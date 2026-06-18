@@ -127,10 +127,13 @@ namespace Eppo
 		{
 			if (component.MeshHandle)
 			{
-				ImGui::TextDisabled("%s", component.MeshHandle->GetName().c_str());
+				const auto& assetManager = Project::GetActive()->GetAssetManager();
+				const auto& mesh = assetManager->GetOrLoadAsset<Mesh>(component.MeshHandle);
+
+				ImGui::TextDisabled("%s", mesh->GetName().c_str());
 				ImGui::SameLine();
 				if (ImGui::Button("X"))
-					component.MeshHandle = nullptr;
+					component.MeshHandle = 0;
 			}
 			else
 			{
@@ -152,8 +155,7 @@ namespace Eppo
 				{
 					if (ImGui::MenuItem("Cube"))
 					{
-						// TODO: Create cube once, add to asset manager on demand, reuse.
-						component.MeshHandle = Mesh::CreateCube();
+						component.MeshHandle = static_cast<uint64_t>(MeshPrimitiveType::Cube);
 						ImGui::CloseCurrentPopup();
 					}
 

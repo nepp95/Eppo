@@ -58,7 +58,7 @@ namespace Eppo
         return true;
     }
 
-    auto AssetManager::GetAsset(AssetHandle handle, bool async) -> Ref<Asset>
+	auto AssetManager::GetOrLoadAsset(AssetHandle handle, bool async) -> Ref<Asset>
     {
         EP_PROFILE_FN("AssetManager::LoadAsset");
 
@@ -68,8 +68,14 @@ namespace Eppo
 	    if (m_LoadedAssets.contains(handle))
 		    return m_LoadedAssets.at(handle);
 
+		Ref<Asset> asset = nullptr;
+
+        // Create generated asset if handle is reserved
+        if (auto id = static_cast<uint64_t>(handle); id < 100)
+            asset = GenerateAsset(handle);
+
         // Create asset instance
-        if (!m_AssetData.contains(handle))
+        if (!asset && !m_AssetData.contains(handle))
         {
             Log::Error("Failed to load asset with handle '{}'", handle);
             return nullptr;
@@ -77,15 +83,27 @@ namespace Eppo
 
 	    const auto& metadata = m_AssetData.at(handle);
 
-	    Ref<Asset> asset = CreateRef<Asset>();
+        if (!asset)
+        {
+            if (async)
+            {
+                EP_ASSERT(!m_LoadFutures.contains(handle));
 
-        if (async)
-        {
-        }
-        else
-        {
-            // Load asset here
-            asset = AssetImporter::ImportAsset(handle, metadata);
+                m_LoadFutures[handle] = std::async(std::launch::async, [this, handle, asset, metadata]()
+                {
+                    EP_PROFILE_FN("AssetManager::LoadAsset::Lambda");
+
+                    // Load asset here
+
+
+                    m_LoadedComplete.insert(handle);
+                });
+            }
+            else
+            {
+                // Load asset here
+                asset = AssetImporter::ImportAsset(handle, metadata);
+            }
         }
 
         asset->Handle = handle;
@@ -98,15 +116,10 @@ namespace Eppo
     {
     }
 
-	auto AssetManager::HasAssetMetadata(AssetHandle handle) const -> bool
+	auto AssetManager::HasAssetData(AssetHandle handle) const -> bool
 	{
         return m_AssetData.contains(handle);
 	}
-
-	auto AssetManager::IsAssetHandleValid(AssetHandle handle) const -> bool
-    {
-        return HasAssetMetadata(handle) && m_AssetData.at(handle).IsValid();
-    }
 
     auto AssetManager::IsAssetLoaded(AssetHandle handle) const -> bool
     {
@@ -130,6 +143,9 @@ namespace Eppo
         data["Assets"] = nlohmann::json::array();
         for (const auto& [handle, metadata] : m_AssetData)
         {
+            if (metadata.Filepath.empty() || metadata.IsRuntimeAsset)
+                continue;
+
             json asset;
             asset["Handle"] = handle;
             asset["Type"] = Utils::AssetTypeToString(metadata.Type);
@@ -185,5 +201,27 @@ namespace Eppo
 		}
 
 		return true;
+	}
+
+	auto AssetManager::GenerateAsset(AssetHandle handle) -> Ref<Asset>
+	{
+        const auto id = static_cast<uint64_t>(handle);
+
+        if (id > 0 && id < 10)
+        {
+            Ref<Mesh> mesh = Mesh::CreateMeshPrimitive(static_cast<MeshPrimitiveType>(id));
+
+            const AssetMetadata metadata{
+				.Handle = handle,
+				.Type = AssetType::Mesh,
+				.IsRuntimeAsset = true,
+            };
+
+            m_AssetData[handle] = metadata;
+
+            return mesh;
+        }
+
+        return nullptr;
 	}
 }

@@ -13,26 +13,31 @@ namespace Eppo
 	class AssetManager
 	{
 	public:
+		// Create an asset from a file on disk
 		auto CreateAsset(const std::filesystem::path& path, const Ref<Asset>& existingAsset = nullptr) -> bool;
-		auto GetAsset(AssetHandle handle, bool async = false) -> Ref<Asset>;
+
+		// Get or load an asset of which we know the metadata
+		auto GetOrLoadAsset(AssetHandle handle, bool async = false) -> Ref<Asset>;
 
 		template<typename T>
 			requires(std::derived_from<T, Asset>)
-		auto GetAsset(AssetHandle handle, bool async = false) -> Ref<T>
+		auto GetOrLoadAsset(AssetHandle handle, bool async = false) -> Ref<T>
 		{
-			return std::static_pointer_cast<T>(GetAsset(handle, async));
+			return std::static_pointer_cast<T>(GetOrLoadAsset(handle, async));
 		}
 
 		auto Tick() -> void;
 
-		[[nodiscard]] auto HasAssetMetadata(AssetHandle handle) const -> bool;
-		[[nodiscard]] auto IsAssetHandleValid(AssetHandle handle) const -> bool;
+		[[nodiscard]] auto HasAssetData(AssetHandle handle) const -> bool;
 		[[nodiscard]] auto IsAssetLoaded(AssetHandle handle) const -> bool;
 		[[nodiscard]] auto GetMetadata(AssetHandle handle) const -> const AssetMetadata&;
 
 		[[nodiscard]] auto GetAssetRegistry() const -> const std::map<AssetHandle, AssetMetadata>& { return m_AssetData; };
 		auto SerializeAssetRegistry() const -> void;
 		auto DeserializeAssetRegistry() -> bool;
+
+	private:
+		auto GenerateAsset(AssetHandle handle) -> Ref<Asset>;
 
 	private:
 		std::map<AssetHandle, AssetMetadata> m_AssetData;

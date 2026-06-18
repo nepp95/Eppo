@@ -14,6 +14,11 @@ struct tg3_node;
 
 namespace Eppo
 {
+	enum class MeshPrimitiveType
+	{
+		Cube = 1,
+	};
+
 	struct Material
 	{
 		int32_t DiffuseMapIndex = -1;
@@ -49,13 +54,15 @@ namespace Eppo
 		Mesh() = default;
 		Mesh(std::string_view path);
 
+		static auto GetStaticType() -> AssetType { return AssetType::Mesh; }
+
 		[[nodiscard]] constexpr auto GetName() const -> const std::string& { return m_Name; }
 		[[nodiscard]] constexpr auto GetSubmeshes() const -> const std::vector<Submesh>& { return m_Submeshes; }
 		[[nodiscard]] auto GetMaterial(uint32_t materialIndex) const -> const Ref<Material>& { return m_Materials.at(materialIndex); }
 		[[nodiscard]] constexpr auto GetImages() const -> const std::vector<Ref<Image>>& { return m_Images; }
 		[[nodiscard]] auto GetImage(uint32_t imageIndex) const -> const Ref<Image>& { return m_Images.at(imageIndex); }
 
-		static auto CreateCube() -> Ref<Mesh>;
+		static auto CreateMeshPrimitive(MeshPrimitiveType type) -> Ref<Mesh>;
 
 	private:
 		auto ProcessNode(const tg3_model& model, const tg3_node& node) -> void;

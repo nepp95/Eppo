@@ -111,7 +111,9 @@ namespace Eppo
 
 			if (entity.contains("MeshComponent"))
 			{
-
+				auto& c = entity["MeshComponent"];
+				auto& nc = newEntity.AddComponent<MeshComponent>();
+				nc.MeshHandle = c["MeshHandle"].get<AssetHandle>();
 			}
 		}
 
@@ -140,7 +142,7 @@ namespace Eppo
 		if (entity.HasComponent<MeshComponent>())
 		{
 			const auto& c = entity.GetComponent<MeshComponent>();
-			// TODO: Implement this
+			e["MeshComponent"]["MeshHandle"] = c.MeshHandle;
 		}
 
 		data.emplace_back(e);

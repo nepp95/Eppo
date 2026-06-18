@@ -2,6 +2,7 @@
 #include "Renderer/VertexBuffer.h"
 
 #include "Renderer/DeviceManager.h"
+#include "Renderer/Mesh.h"
 #include "Renderer/Vertex.h"
 
 namespace Eppo
@@ -70,35 +71,41 @@ namespace Eppo
 		m_Buffer = buffer;
 	}
 
-	auto VertexBuffer::CreateCube() -> Ref<VertexBuffer>
+	auto VertexBuffer::CreateMeshPrimitive(const MeshPrimitiveType type) -> Ref<VertexBuffer>
 	{
-		constexpr std::array vertices = {
-			Vertex{{ -1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
-			Vertex{{  1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
-			Vertex{{  1.0f,  1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
-			Vertex{{ -1.0f,  1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
-			Vertex{{  1.0f, -1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
-			Vertex{{ -1.0f, -1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
-			Vertex{{ -1.0f,  1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
-			Vertex{{  1.0f,  1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
-			Vertex{{ -1.0f, -1.0f, -1.0f }, { -1.0f,  0.0f,  0.0f }},
-			Vertex{{ -1.0f, -1.0f,  1.0f }, { -1.0f,  0.0f,  0.0f }},
-			Vertex{{ -1.0f,  1.0f,  1.0f }, { -1.0f,  0.0f,  0.0f }},
-			Vertex{{ -1.0f,  1.0f, -1.0f }, { -1.0f,  0.0f,  0.0f }},
-			Vertex{{  1.0f, -1.0f,  1.0f }, {  1.0f,  0.0f,  0.0f }},
-			Vertex{{  1.0f, -1.0f, -1.0f }, {  1.0f,  0.0f,  0.0f }},
-			Vertex{{  1.0f,  1.0f, -1.0f }, {  1.0f,  0.0f,  0.0f }},
-			Vertex{{  1.0f,  1.0f,  1.0f }, {  1.0f,  0.0f,  0.0f }},
-			Vertex{{ -1.0f,  1.0f,  1.0f }, {  0.0f,  1.0f,  0.0f }},
-			Vertex{{  1.0f,  1.0f,  1.0f }, {  0.0f,  1.0f,  0.0f }},
-			Vertex{{  1.0f,  1.0f, -1.0f }, {  0.0f,  1.0f,  0.0f }},
-			Vertex{{ -1.0f,  1.0f, -1.0f }, {  0.0f,  1.0f,  0.0f }},
-			Vertex{{ -1.0f, -1.0f, -1.0f }, {  0.0f, -1.0f,  0.0f }},
-			Vertex{{  1.0f, -1.0f, -1.0f }, {  0.0f, -1.0f,  0.0f }},
-			Vertex{{  1.0f, -1.0f,  1.0f }, {  0.0f, -1.0f,  0.0f }},
-			Vertex{{ -1.0f, -1.0f,  1.0f }, {  0.0f, -1.0f,  0.0f }},
-		};
+		switch (type)
+		{
+			case MeshPrimitiveType::Cube:
+			{
+				constexpr std::array vertices = {
+					Vertex{{ -1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
+					Vertex{{  1.0f, -1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
+					Vertex{{  1.0f,  1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
+					Vertex{{ -1.0f,  1.0f,  1.0f }, {  0.0f,  0.0f,  1.0f }},
+					Vertex{{  1.0f, -1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
+					Vertex{{ -1.0f, -1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
+					Vertex{{ -1.0f,  1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
+					Vertex{{  1.0f,  1.0f, -1.0f }, {  0.0f,  0.0f, -1.0f }},
+					Vertex{{ -1.0f, -1.0f, -1.0f }, { -1.0f,  0.0f,  0.0f }},
+					Vertex{{ -1.0f, -1.0f,  1.0f }, { -1.0f,  0.0f,  0.0f }},
+					Vertex{{ -1.0f,  1.0f,  1.0f }, { -1.0f,  0.0f,  0.0f }},
+					Vertex{{ -1.0f,  1.0f, -1.0f }, { -1.0f,  0.0f,  0.0f }},
+					Vertex{{  1.0f, -1.0f,  1.0f }, {  1.0f,  0.0f,  0.0f }},
+					Vertex{{  1.0f, -1.0f, -1.0f }, {  1.0f,  0.0f,  0.0f }},
+					Vertex{{  1.0f,  1.0f, -1.0f }, {  1.0f,  0.0f,  0.0f }},
+					Vertex{{  1.0f,  1.0f,  1.0f }, {  1.0f,  0.0f,  0.0f }},
+					Vertex{{ -1.0f,  1.0f,  1.0f }, {  0.0f,  1.0f,  0.0f }},
+					Vertex{{  1.0f,  1.0f,  1.0f }, {  0.0f,  1.0f,  0.0f }},
+					Vertex{{  1.0f,  1.0f, -1.0f }, {  0.0f,  1.0f,  0.0f }},
+					Vertex{{ -1.0f,  1.0f, -1.0f }, {  0.0f,  1.0f,  0.0f }},
+					Vertex{{ -1.0f, -1.0f, -1.0f }, {  0.0f, -1.0f,  0.0f }},
+					Vertex{{  1.0f, -1.0f, -1.0f }, {  0.0f, -1.0f,  0.0f }},
+					Vertex{{  1.0f, -1.0f,  1.0f }, {  0.0f, -1.0f,  0.0f }},
+					Vertex{{ -1.0f, -1.0f,  1.0f }, {  0.0f, -1.0f,  0.0f }},
+				};
 
-		return CreateRef<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+				return CreateRef<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+			}
+		}
 	}
 }

@@ -50,7 +50,7 @@ namespace Eppo
 			if (metadata.Type != AssetType::Scene)
 				continue;
 
-			Ref<Scene> scene = assetManager->GetAsset<Scene>(handle);
+			Ref<Scene> scene = assetManager->GetOrLoadAsset<Scene>(handle);
 
 			SceneSerializer serializer(scene);
 			serializer.Serialize(GetAssetFilepath(metadata.Filepath));

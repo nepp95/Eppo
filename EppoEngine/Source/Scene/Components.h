@@ -51,11 +51,15 @@ namespace Eppo
 
 	struct MeshComponent
 	{
-		Ref<Mesh> MeshHandle = nullptr;
+		AssetHandle MeshHandle = 0;
 
 		MeshComponent() = default;
 		MeshComponent(const Ref<Mesh>& mesh)
-			: MeshHandle(mesh)
+			: MeshHandle(mesh->Handle)
+		{}
+
+		MeshComponent(const AssetHandle handle)
+			: MeshHandle(handle)
 		{}
 	};
 }

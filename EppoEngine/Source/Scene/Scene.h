@@ -18,6 +18,8 @@ namespace Eppo
 		Scene() = default;
 		~Scene() = default;
 
+		static auto GetStaticType() -> AssetType { return AssetType::Scene; }
+
 		auto SetViewportSize(uint32_t width, uint32_t height) -> void;
 
 		auto OnUpdateRuntime(float timestep) -> void;

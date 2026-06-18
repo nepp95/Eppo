@@ -50,10 +50,17 @@ namespace Eppo
 		tg3_error_stack_free(&errors);
 	}
 
-	auto Mesh::CreateCube() -> Ref<Mesh>
+	auto Mesh::CreateMeshPrimitive(const MeshPrimitiveType type) -> Ref<Mesh>
 	{
-		const auto vb = VertexBuffer::CreateCube();
-		const auto ib = IndexBuffer::CreateCube();
+		constexpr auto MeshPrimitiveTypeToString = [](const MeshPrimitiveType type) -> std::string
+		{
+			if (type == MeshPrimitiveType::Cube)
+				return "Cube";
+			return "Unknown";
+		};
+
+		const auto vb = VertexBuffer::CreateMeshPrimitive(type);
+		const auto ib = IndexBuffer::CreateMeshPrimitive(type);
 
 		Ref<Material> material = CreateRef<Material>();
 
@@ -67,13 +74,14 @@ namespace Eppo
 			.Name = "Cube",
 			.VertexBuffer = vb,
 			.IndexBuffer = ib,
-			.Primitives = { primitive }, 
+			.Primitives = { primitive },
 			.LocalTransform = glm::mat4(1.0f),
 		};
 
 		Ref<Mesh> mesh = CreateRef<Mesh>();
 		mesh->m_Submeshes.emplace_back(submesh);
 		mesh->m_Materials.emplace_back(material);
+		mesh->m_Name = MeshPrimitiveTypeToString(type);
 
 		return mesh;
 	}

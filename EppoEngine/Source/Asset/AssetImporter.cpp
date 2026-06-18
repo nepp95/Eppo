@@ -8,7 +8,13 @@
 namespace Eppo
 {
 	std::map<AssetType, importFn> AssetImporter::s_AssetImportFns = {
+		{ AssetType::Mesh, AssetImporter::ImportMesh },
 		{ AssetType::Scene, AssetImporter::ImportScene }
+	};
+
+	std::map<AssetType, exportFn> AssetImporter::s_AssetExportFns = {
+		{ AssetType::Mesh, AssetImporter::ExportMesh },
+		{ AssetType::Scene, AssetImporter::ExportScene },
 	};
 
 	auto AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata) -> Ref<Asset>
@@ -27,6 +33,8 @@ namespace Eppo
 	auto AssetImporter::ImportMesh(AssetHandle handle, const AssetMetadata& metadata) -> Ref<Mesh>
 	{
 		EP_PROFILE_FN("AssetImporter::ImportMesh");
+
+		return nullptr;
 	}
 
 	auto AssetImporter::ImportScene(AssetHandle handle, const AssetMetadata& metadata) -> Ref<Scene>
@@ -38,5 +46,42 @@ namespace Eppo
 		serializer.Deserialize(Project::GetAssetFilepath(metadata.Filepath));
 
 		return scene;
+	}
+
+	auto AssetImporter::ExportAsset(const Ref<Asset>& asset, const std::filesystem::path& path) -> bool
+	{
+		EP_PROFILE_FN("AssetImporter::ExportAsset");
+
+		const auto& assetManager = Project::GetActive()->GetAssetManager();
+		const auto& metadata = assetManager->GetMetadata(asset->Handle);
+
+		if (!s_AssetExportFns.contains(metadata.Type))
+		{
+			Log::Error("No exporter available for type: {}", Utils::AssetTypeToString(metadata.Type));
+			return false;
+		}
+
+		return s_AssetExportFns.at(metadata.Type)(asset, path);
+	}
+
+	auto AssetImporter::ExportScene(const Ref<Asset>& asset, const std::filesystem::path& path) -> bool
+	{
+		EP_PROFILE_FN("AssetImporter::ExportScene");
+
+		const Ref<Scene>& scene = std::static_pointer_cast<Scene>(asset);
+
+		if (SceneSerializer serializer(scene); !serializer.Serialize(Project::GetAssetFilepath(path)))
+			return false;
+
+		const auto& assetManager = Project::GetActive()->GetAssetManager();
+		if (!assetManager->HasAssetData(scene->Handle))
+		{
+			if (assetManager->CreateAsset(path, scene))
+				assetManager->GetOrLoadAsset(scene->Handle);
+			else
+				return false;
+		}
+
+		return true;
 	}
 }

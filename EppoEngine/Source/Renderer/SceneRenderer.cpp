@@ -2,6 +2,7 @@
 #include "Renderer/SceneRenderer.h"
 
 #include "Core/Application.h"
+#include "Project/Project.h"
 #include "Renderer/Framebuffer.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Vertex.h"
@@ -160,11 +161,13 @@ namespace Eppo
 		return m_GeometryPipeline->GetSpecification().Framebuffer->GetFinalImage();
 	}
 
-	auto SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform) -> void
+	auto SceneRenderer::SubmitMesh(const AssetHandle meshHandle, const glm::mat4& transform) -> void
 	{
 		const DrawKey key{
-			.ID = mesh->Handle,
+			.ID = meshHandle,
 		};
+
+		const auto& mesh = Project::GetActive()->GetAssetManager()->GetOrLoadAsset<Mesh>(meshHandle);
 
 		const DrawCommand cmd{
 			.Mesh = mesh,

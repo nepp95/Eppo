@@ -25,7 +25,7 @@ namespace Eppo
 
 		auto GetFinalImage() const -> const Ref<Image>&;
 
-		auto SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform) -> void;
+		auto SubmitMesh(const AssetHandle meshHandle, const glm::mat4& transform) -> void;
 
 		auto Resize(uint32_t width, uint32_t height) -> void;
 

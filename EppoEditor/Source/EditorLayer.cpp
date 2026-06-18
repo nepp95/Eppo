@@ -34,6 +34,7 @@ namespace Eppo
 
 	auto EditorLayer::OnDetach() -> void
 	{
+		Project::SetActive(nullptr);
 	}
 
 	auto EditorLayer::OnUpdate(float timestep) -> void
@@ -218,13 +219,15 @@ namespace Eppo
 	{
 		SaveProject();
 
-		m_PanelManager->SetSceneContext(nullptr);
+		auto scene = CreateRef<Scene>();
+
+		m_PanelManager->SetSceneContext(scene);
 		
 		if (Project::GetActive())
 			Project::SetActive(nullptr);
 
-		m_EditorScene = nullptr;
-		m_ActiveScene = nullptr;
+		m_EditorScene = scene;
+		m_ActiveScene = scene;
 	}
 
 	auto EditorLayer::NewProject(const std::string& name) -> void
@@ -356,7 +359,7 @@ namespace Eppo
 	auto EditorLayer::OpenScene(AssetHandle handle) -> void
 	{
 		const auto& assetManager = Project::GetActive()->GetAssetManager();
-		m_EditorScene = std::static_pointer_cast<Scene>(assetManager->GetAsset(handle));
+		m_EditorScene = std::static_pointer_cast<Scene>(assetManager->GetOrLoadAsset(handle));
 		m_ActiveScene = m_EditorScene;
 		m_ActiveScenePath = Project::GetAssetFilepath(assetManager->GetMetadata(handle).Filepath);
 
@@ -376,7 +379,7 @@ namespace Eppo
 		}
 
 		const auto& assetManager = Project::GetActive()->GetAssetManager();
-		if (assetManager && !assetManager->HasAssetMetadata(m_ActiveScene->Handle))
+		if (assetManager && !assetManager->HasAssetData(m_ActiveScene->Handle))
 			assetManager->CreateAsset(m_ActiveScenePath, m_ActiveScene);
 
 		return saved;

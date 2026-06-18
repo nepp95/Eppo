@@ -10,6 +10,7 @@ namespace Eppo
 		AssetHandle Handle = 0;
 		AssetType Type = AssetType::None;
 		std::filesystem::path Filepath;
+		bool IsRuntimeAsset = false;
 
 		[[nodiscard]] auto IsValid() const -> bool
 		{

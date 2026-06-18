@@ -3,9 +3,13 @@
 
 namespace Eppo
 {
+	// Reserved UUIDs (1 - 99)
+	// 1 - 9: Mesh Primitives
+
 	UUID::UUID()
 	{
-		m_UUID = Utils::GenerateRandomUInt64();
+		while (m_UUID < 100)
+			m_UUID = Utils::GenerateRandomUInt64();
 	}
 
 	UUID::UUID(uint64_t id)
