@@ -54,8 +54,14 @@ namespace Eppo
 	{
 		constexpr auto MeshPrimitiveTypeToString = [](const MeshPrimitiveType type) -> std::string
 		{
+			if (type == MeshPrimitiveType::Cone)
+				return "Cone";
 			if (type == MeshPrimitiveType::Cube)
 				return "Cube";
+			if (type == MeshPrimitiveType::Cylinder)
+				return "Cylinder";
+			if (type == MeshPrimitiveType::Sphere)
+				return "Sphere";
 			return "Unknown";
 		};
 

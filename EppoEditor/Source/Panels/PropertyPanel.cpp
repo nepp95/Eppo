@@ -153,9 +153,27 @@ namespace Eppo
 
 				if (ImGui::BeginPopup("CreateMesh"))
 				{
+					if (ImGui::MenuItem("Cone"))
+					{
+						component.MeshHandle = static_cast<uint64_t>(MeshPrimitiveType::Cone);
+						ImGui::CloseCurrentPopup();
+					}
+
 					if (ImGui::MenuItem("Cube"))
 					{
 						component.MeshHandle = static_cast<uint64_t>(MeshPrimitiveType::Cube);
+						ImGui::CloseCurrentPopup();
+					}
+
+					if (ImGui::MenuItem("Cylinder"))
+					{
+						component.MeshHandle = static_cast<uint64_t>(MeshPrimitiveType::Cylinder);
+						ImGui::CloseCurrentPopup();
+					}
+
+					if (ImGui::MenuItem("Sphere"))
+					{
+						component.MeshHandle = static_cast<uint64_t>(MeshPrimitiveType::Sphere);
 						ImGui::CloseCurrentPopup();
 					}
 

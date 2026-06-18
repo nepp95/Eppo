@@ -16,7 +16,10 @@ namespace Eppo
 {
 	enum class MeshPrimitiveType
 	{
-		Cube = 1,
+		Cone = 1,
+		Cube = 2,
+		Cylinder = 3,
+		Sphere = 4,
 	};
 
 	struct Material
