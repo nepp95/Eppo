@@ -1,0 +1,148 @@
+{
+    "Scene": {
+        "Entities": [
+            {
+                "IDComponent": {
+                    "ID": 39560509675772309
+                },
+                "MeshComponent": {
+                    "MeshHandle": 1
+                },
+                "TagComponent": {
+                    "Tag": "Cone 1"
+                },
+                "TransformComponent": {
+                    "Rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Translation": [
+                        0.0,
+                        0.0,
+                        -4.0
+                    ]
+                }
+            },
+            {
+                "IDComponent": {
+                    "ID": 558050922577306240
+                },
+                "MeshComponent": {
+                    "MeshHandle": 3
+                },
+                "TagComponent": {
+                    "Tag": "Cylinder 2"
+                },
+                "TransformComponent": {
+                    "Rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Translation": [
+                        0.0,
+                        3.0999999046325684,
+                        0.0
+                    ]
+                }
+            },
+            {
+                "IDComponent": {
+                    "ID": 1297734541011958955
+                },
+                "MeshComponent": {
+                    "MeshHandle": 4
+                },
+                "TagComponent": {
+                    "Tag": "Sphere 1"
+                },
+                "TransformComponent": {
+                    "Rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Translation": [
+                        0.0,
+                        0.0,
+                        -2.0
+                    ]
+                }
+            },
+            {
+                "IDComponent": {
+                    "ID": 5276681695514195852
+                },
+                "MeshComponent": {
+                    "MeshHandle": 3
+                },
+                "TagComponent": {
+                    "Tag": "Cylinder 1"
+                },
+                "TransformComponent": {
+                    "Rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Translation": [
+                        0.0,
+                        0.0,
+                        2.0
+                    ]
+                }
+            },
+            {
+                "IDComponent": {
+                    "ID": 8351827442453317863
+                },
+                "MeshComponent": {
+                    "MeshHandle": 2
+                },
+                "TagComponent": {
+                    "Tag": "Cube 1"
+                },
+                "TransformComponent": {
+                    "Rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "Handle": 18159251541775323644,
+        "Name": "Def"
+    }
+}

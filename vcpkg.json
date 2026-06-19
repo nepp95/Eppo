@@ -46,6 +46,10 @@
       "features": [
         "on-demand"
       ]
+    },
+    {
+      "name": "unittest-cpp",
+      "version>=": "2.0.0#6"
     }
   ]
 }
