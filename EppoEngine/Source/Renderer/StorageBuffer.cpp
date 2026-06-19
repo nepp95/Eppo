@@ -1,21 +1,22 @@
 #include "pch.h"
-#include "Renderer/UniformBuffer.h"
+#include "Renderer/StorageBuffer.h"
 
 #include "Renderer/DeviceManager.h"
 
 namespace Eppo
 {
-	UniformBuffer::UniformBuffer(uint64_t size, const std::string& debugName)
-		: m_Size(size), m_DebugName(debugName)
+	StorageBuffer::StorageBuffer(uint32_t structStride, uint64_t initialSize, const std::string& debugName)
+		: m_Stride(structStride), m_DebugName(debugName)
 	{
-		EP_PROFILE_FN("UniformBuffer::UniformBuffer");
+		EP_PROFILE_FN("StorageBuffer::StorageBuffer");
 
+		m_Size = initialSize >= m_Stride ? initialSize : m_Stride;
 		CreateBuffer();
 	}
 
-	auto UniformBuffer::SetData(const void* data, uint64_t size, uint64_t offset /*= 0*/) -> void
+	auto StorageBuffer::SetData(const void* data, uint64_t size, uint64_t offset) -> void
 	{
-		EP_PROFILE_FN("UniformBuffer::SetData");
+		EP_PROFILE_FN("StorageBuffer::SetData");
 
 		const auto device = DeviceManager::Get()->GetDevice();
 		const auto cmd = device->createCommandList();
@@ -34,19 +35,16 @@ namespace Eppo
 		device->executeCommandList(cmd);
 	}
 
-	auto UniformBuffer::CreateBuffer() -> void
+	auto StorageBuffer::CreateBuffer() -> void
 	{
-		EP_PROFILE_FN("UniformBuffer::CreateBuffer");
-
 		const auto device = DeviceManager::Get()->GetDevice();
 
 		nvrhi::BufferDesc bufferDesc{
 			.byteSize = m_Size,
+			.structStride = m_Stride,
 			.debugName = m_DebugName,
-			.isConstantBuffer = true,
-			.initialState = nvrhi::ResourceStates::ConstantBuffer,
+			.initialState = nvrhi::ResourceStates::ShaderResource,
 			.keepInitialState = true,
-			.cpuAccess = nvrhi::CpuAccessMode::Write,
 		};
 
 		m_Buffer = device->createBuffer(bufferDesc);

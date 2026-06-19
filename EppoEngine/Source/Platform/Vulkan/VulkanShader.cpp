@@ -389,8 +389,45 @@ namespace Eppo
 			}
 		}
 
+		if (!resources.storage_buffers.empty())
+		{
+			Log::Info("Found {} storage_buffers", resources.storage_buffers.size());
+			
+			for (const auto& resource : resources.storage_buffers)
+			{
+				const uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+				const uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding) - vulkanOffsets.shaderResource;
+			
+				bool bindingExists = false;
+				if (m_ShaderResources.contains(set))
+				{
+					for (auto& setResource : m_ShaderResources.at(set))
+					{
+						if (resource.name == setResource.Name && binding == setResource.Binding)
+						{
+							setResource.Stage = (setResource.Stage | type);
+							bindingExists = true;
+							break;
+						}
+					}
+				}
+
+				if (!bindingExists)
+				{
+					ShaderResourceBinding& shaderResource = m_ShaderResources[set].emplace_back();
+					shaderResource.Name = resource.name;
+					shaderResource.Binding = binding;
+					shaderResource.Stage = type;
+					shaderResource.Type = nvrhi::ResourceType::StructuredBuffer_SRV;
+				
+					Log::Info("\t\tName: {}", shaderResource.Name);
+					Log::Info("\t\tBinding: {} (set: {})", shaderResource.Binding, set);
+					Log::Info("\t\tType: {}", nvrhi::utils::ResourceTypeToString(shaderResource.Type));
+				}
+			}
+		}
+
 		Log::Trace("Found {} sampled_images", resources.sampled_images.size());
-		Log::Trace("Found {} storage_buffers", resources.storage_buffers.size());
 		Log::Trace("Found {} storage_images", resources.storage_images.size());
 	}
 }

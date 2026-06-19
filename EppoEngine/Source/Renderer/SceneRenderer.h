@@ -4,6 +4,7 @@
 #include "Renderer/IndexBuffer.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Pipeline.h"
+#include "Renderer/StorageBuffer.h"
 #include "Renderer/UniformBuffer.h"
 #include "Renderer/VertexBuffer.h"
 #include "Scene/Entity.h"
@@ -58,12 +59,13 @@ namespace Eppo
 		struct DrawCommand
 		{
 			Ref<Mesh> Mesh = nullptr;
-			glm::mat4 Transform = glm::mat4(1.0f);
+			std::vector<glm::mat4> Transforms = { glm::mat4(1.0f) };
 			uint32_t ImageCount = 0;
 			uint32_t ImageOffset = 0;
+			uint32_t InstanceOffset = 0;
 		};
-
 		std::map<DrawKey, DrawCommand> m_DrawCommands;
+		Ref<StorageBuffer> m_InstanceTransformsSB = nullptr;
 
 		struct CameraData
 		{

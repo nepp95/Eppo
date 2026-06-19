@@ -127,17 +127,20 @@ namespace Eppo
 		// Update descriptor table
 		const auto& descriptorTable = m_GeometryPipeline->GetSpecification().Shader->GetDescriptorTable();
 
-		// Resize
+		// Resize descriptor table
 		uint32_t imageCount = 0;
 		for (const auto& [key, drawCmd] : m_DrawCommands)
 			imageCount += drawCmd.ImageCount;
 
 		device->resizeDescriptorTable(descriptorTable, imageCount, false);
 
-		// Write
+		// Write descriptor table and gather instance transforms
 		uint32_t imageOffset = 0;
+		std::vector<glm::mat4> instanceTransforms;
+
 		for (auto& [key, drawCmd] : m_DrawCommands)
 		{
+			// Mesh textures
 			const auto& images = drawCmd.Mesh->GetImages();
 
 			for (uint32_t i = 0; i < images.size(); i++)
@@ -148,7 +151,19 @@ namespace Eppo
 			
 			drawCmd.ImageOffset = imageOffset;
 			imageOffset += static_cast<uint32_t>(images.size());
+
+			// Mesh instance transforms
+			drawCmd.InstanceOffset = static_cast<uint32_t>(instanceTransforms.size());
+			instanceTransforms.insert(instanceTransforms.end(), drawCmd.Transforms.begin(), drawCmd.Transforms.end());
 		}
+
+		// Reallocate instance transforms buffer if needed
+		const uint64_t requiredSize = instanceTransforms.size() * sizeof(glm::mat4);
+
+		if (!m_InstanceTransformsSB)
+			m_InstanceTransformsSB = CreateRef<StorageBuffer>(sizeof(glm::mat4), requiredSize, "StorageBuffer Instance Transforms");
+
+		m_InstanceTransformsSB->SetData(instanceTransforms.data(), requiredSize);
 
 		GeometryPass();
 
@@ -167,15 +182,23 @@ namespace Eppo
 			.ID = meshHandle,
 		};
 
-		const auto& mesh = Project::GetActive()->GetAssetManager()->GetOrLoadAsset<Mesh>(meshHandle);
+		if (m_DrawCommands.contains(key))
+		{
+			auto& drawCmd = m_DrawCommands.at(key);
+			drawCmd.Transforms.emplace_back(transform);
+		}
+		else
+		{
+			const auto& mesh = Project::GetActive()->GetAssetManager()->GetOrLoadAsset<Mesh>(meshHandle);
 
-		const DrawCommand cmd{
-			.Mesh = mesh,
-			.Transform = transform,
-			.ImageCount = static_cast<uint32_t>(mesh->GetImages().size()),
-		};
+			const DrawCommand cmd{
+				.Mesh = mesh,
+				.Transforms = { transform },
+				.ImageCount = static_cast<uint32_t>(mesh->GetImages().size()),
+			};
 
-		m_DrawCommands[key] = cmd;
+			m_DrawCommands[key] = cmd;
+		}
 	}
 
 	auto SceneRenderer::Resize(uint32_t width, uint32_t height) -> void
@@ -234,6 +257,7 @@ namespace Eppo
 		struct PushConstants
 		{
 			glm::mat4 Transform;
+			uint32_t InstanceOffset;
 			int32_t DiffuseMapIndex;
 			int32_t NormalMapIndex;
 			int32_t RoughMetMapIndex;
@@ -250,7 +274,8 @@ namespace Eppo
 			nvrhi::BindingSetItem::PushConstants(0, sizeof(PushConstants)),
 			nvrhi::BindingSetItem::ConstantBuffer(1, m_CameraUB->GetBuffer()),
 			nvrhi::BindingSetItem::ConstantBuffer(2, m_LightsUB->GetBuffer()),
-			nvrhi::BindingSetItem::Sampler(0, m_Sampler)
+			nvrhi::BindingSetItem::Sampler(0, m_Sampler),
+			nvrhi::BindingSetItem::StructuredBuffer_SRV(0, m_InstanceTransformsSB->GetBuffer())
 		};
 
 		const auto bindingSet = device->createBindingSet(desc, bindingLayouts.at(0));
@@ -262,6 +287,10 @@ namespace Eppo
 
 		for (const auto& [key, drawCmd] : m_DrawCommands)
 		{
+			const uint32_t instanceCount = static_cast<uint32_t>(drawCmd.Transforms.size());
+			if (instanceCount == 0)
+				continue;
+
 			for (const auto& submesh : drawCmd.Mesh->GetSubmeshes())
 			{
 				nvrhi::VertexBufferBinding vtxBufBinding{
@@ -277,7 +306,8 @@ namespace Eppo
 				state.indexBuffer.offset = 0;
 				m_CommandList->setGraphicsState(state);
 
-				pushConstants.Transform = drawCmd.Transform * submesh.LocalTransform;
+				pushConstants.Transform = submesh.LocalTransform;
+				pushConstants.InstanceOffset = drawCmd.InstanceOffset;
 
 				for (const auto& p : submesh.Primitives)
 				{
@@ -290,6 +320,7 @@ namespace Eppo
 
 					nvrhi::DrawArguments drawArgs{
 						.vertexCount = static_cast<uint32_t>(p.IndexCount),
+						.instanceCount = instanceCount,
 						.startIndexLocation = p.FirstIndex,
 						.startVertexLocation = p.FirstVertex,
 					};
@@ -297,10 +328,10 @@ namespace Eppo
 					m_CommandList->drawIndexed(drawArgs);
 
 					m_DrawStatistics.DrawCalls++;
-					m_DrawStatistics.Instances++;
 				}
 				m_DrawStatistics.Submeshes++;
 			}
+			m_DrawStatistics.Instances += instanceCount;
 			m_DrawStatistics.Meshes++;
 		}
 

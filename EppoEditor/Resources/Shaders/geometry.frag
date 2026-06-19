@@ -35,6 +35,7 @@ struct Input
 struct PushConstants
 {
 	float4x4 Transform;
+	uint InstanceOffset;
 	int DiffuseMapIndex;
 	int NormalMapIndex;
 	int RoughMetMapIndex;
