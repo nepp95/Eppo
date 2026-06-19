@@ -37,6 +37,8 @@ namespace Eppo
 
 	auto StorageBuffer::CreateBuffer() -> void
 	{
+		EP_PROFILE_FN("StorageBuffer::CreateBuffer");
+
 		const auto device = DeviceManager::Get()->GetDevice();
 
 		nvrhi::BufferDesc bufferDesc{

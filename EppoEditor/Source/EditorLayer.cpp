@@ -168,6 +168,8 @@ namespace Eppo
 		const auto& finalImage = m_SceneRenderer->GetFinalImage();
 		ImGui::Image(ImGuiEx::CreateTextureRef(finalImage->GetTexture()), ImVec2(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight)));
 
+		UI_Toolbar();
+
 		ImGui::End(); // Viewport
 		ImGui::PopStyleVar();
 
@@ -213,6 +215,26 @@ namespace Eppo
 		}
 
 		return false;
+	}
+
+	auto EditorLayer::OnScenePlay() -> void
+	{
+		if (!m_EditorScene)
+			return;
+
+		m_SceneState = SceneState::Play;
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_PanelManager->SetSceneContext(m_ActiveScene);
+	}
+
+	auto EditorLayer::OnSceneStop() -> void
+	{
+		if (!m_ActiveScene)
+			return;
+
+		m_SceneState = SceneState::Edit;
+		m_ActiveScene = m_EditorScene;
+		m_PanelManager->SetSceneContext(m_ActiveScene);
 	}
 
 	auto EditorLayer::CloseProject() -> void
@@ -399,6 +421,50 @@ namespace Eppo
 		serializer.Serialize(m_ActiveScenePath);
 
 		return true;
+	}
+
+	auto EditorLayer::UI_Toolbar() -> void
+	{
+		constexpr float toolbarWidth = 56.0f;
+		constexpr float toolbarHeight = 40.0f;
+		constexpr float topMargin = 24.0f;
+		ImVec2 winPos = ImGui::GetWindowPos();
+		ImVec2 winSize = ImGui::GetWindowSize();
+		ImVec2 toolbarPos = { winPos.x + (winSize.x - toolbarWidth) * 0.5f, winPos.y + topMargin };
+
+		ImGui::SetCursorScreenPos(toolbarPos);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.35f));
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 6.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+
+		constexpr auto windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		ImGui::BeginChild("##Toolbar", ImVec2(toolbarWidth, toolbarHeight), ImGuiChildFlags_AlwaysUseWindowPadding, windowFlags);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.25f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 0.4f));
+
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				if (ImGui::Button("Play", ImVec2(40.0f, 24.0f)))
+					OnScenePlay();
+				break;
+			}
+
+			case SceneState::Play:
+			{
+				if (ImGui::Button("Stop", ImVec2(40.0f, 24.0f)))
+					OnSceneStop();
+				break;
+			}
+		}
+
+		ImGui::PopStyleColor(3);
+		ImGui::EndChild();
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor();
 	}
 
 	auto EditorLayer::UI_NewProjectPopup() -> void

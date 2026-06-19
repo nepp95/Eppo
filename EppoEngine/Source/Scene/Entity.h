@@ -27,6 +27,13 @@ namespace Eppo
 			return component;
 		}
 
+		template<typename T, typename... Args>
+		auto AddOrReplaceComponent(Args&&... args) -> T&
+		{
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			return component;
+		}
+
 		template<typename T>
 		auto RemoveComponent() const -> void
 		{

@@ -19,6 +19,9 @@ namespace Eppo
 	private:
 		auto OnKeyPressed(const KeyPressedEvent& e) -> bool;
 
+		auto OnScenePlay() -> void;
+		auto OnSceneStop() -> void;
+
 		auto CloseProject() -> void;
 		auto NewProject(const std::string& name) -> void;
 		auto OpenProject() -> bool;
@@ -32,6 +35,7 @@ namespace Eppo
 		auto SaveScene() -> bool;
 		auto SaveSceneAs() -> bool;
 
+		auto UI_Toolbar() -> void;
 		auto UI_NewProjectPopup() -> void;
 
 	private:

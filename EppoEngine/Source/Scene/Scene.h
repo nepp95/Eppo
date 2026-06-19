@@ -29,7 +29,16 @@ namespace Eppo
 
 		auto CreateEntity(const std::string& name = std::string()) -> Entity;
 		auto CreateEntityWithUUID(const UUID& uuid, const std::string& name) -> Entity;
+		auto DuplicateEntity(Entity entity) -> Entity;
 		auto DestroyEntity(Entity entity) -> void;
+
+		template<typename T>
+		static auto TryCopyComponent(Entity srcEntity, Entity dstEntity) -> void;
+
+		template<typename T>
+		static auto CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry, const std::unordered_map<UUID, EntityHandle>& entityMap) -> void;
+
+		static auto Copy(Ref<Scene> scene) -> Ref<Scene>;
 
 	private:
 		auto RenderScene(const Ref<SceneRenderer>& sceneRenderer) -> void;
