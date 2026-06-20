@@ -1,15 +1,11 @@
 project(Engine)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "Source/*.cpp" "Vendor/*.cpp")
-set(INCLUDE_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}/Source"
-    ${TINYGLTF_INCLUDE_DIRS}
-)
-
 add_library(EppoEngine STATIC ${SOURCES})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
+    file(GLOB NETHOST_DIR "$ENV{DOTNET_ROOT}/packs/Microsoft.NETCore.App.Host.win-x64/10.*/runtimes/win-x64/native")
     target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_WINDOWS)
     target_compile_options(EppoEngine PUBLIC /utf-8)
     target_include_directories(EppoEngine PUBLIC $ENV{VULKAN_SDK}/Include)
@@ -17,6 +13,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(EppoEngine PRIVATE $<$<CONFIG:Debug>:spirv-cross-cored> $<$<CONFIG:RelWithDebInfo>:spirv-cross-core> $<$<CONFIG:Dist>:spirv-cross-core>)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
+    file(GLOB NETHOST_DIR "$ENV{DOTNET_ROOT}/packs/Microsoft.NETCore.App.Host.linux-x64/10.*/runtimes/linux-x64/native")
     target_compile_definitions(EppoEngine PUBLIC EP_PLATFORM_LINUX)
     target_include_directories(EppoEngine PUBLIC $ENV{VULKAN_SDK}/include)
     target_link_directories(EppoEngine PUBLIC "$ENV{VULKAN_SDK}/lib")
@@ -25,18 +22,24 @@ else()
     message(FATAL_ERROR "Unsupported platform '${CMAKE_SYSTEM_NAME}' detected!")
 endif()
 
+set(INCLUDE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source"
+    ${TINYGLTF_INCLUDE_DIRS}
+    ${NETHOST_DIR}
+)
+
 target_compile_definitions(EppoEngine PUBLIC
     $<$<CONFIG:Debug>:EP_DEBUG> $<$<CONFIG:RelWithDebInfo>:EP_RELEASE> $<$<CONFIG:Release>:EP_DIST>
     $<$<CONFIG:Debug>:TRACY_ENABLE> $<$<CONFIG:RelWithDebInfo>:TRACY_ENABLE>
 )
 target_include_directories(EppoEngine PUBLIC ${INCLUDE_DIRS})
-target_link_libraries(EppoEngine PUBLIC EnTT::EnTT glm::glm imgui::imgui nfd::nfd nvrhi spdlog::spdlog Tracy::TracyClient Vulkan::Vulkan)
+target_link_directories(EppoEngine PUBLIC ${NETHOST_DIR})
+target_link_libraries(EppoEngine PUBLIC EnTT::EnTT glm::glm imgui::imgui nethost nfd::nfd nvrhi spdlog::spdlog Tracy::TracyClient Vulkan::Vulkan)
 target_link_libraries(EppoEngine PRIVATE
     glfw
     Vulkan::dxc_lib
 )
 target_precompile_headers(EppoEngine PRIVATE "Source/pch.h")
-
 
 if (MSVC)
     target_compile_options(EppoEngine PRIVATE "/W3")

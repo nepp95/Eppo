@@ -87,17 +87,17 @@ namespace Eppo
         {
             if (async)
             {
-                EP_ASSERT(!m_LoadFutures.contains(handle));
+                //EP_ASSERT(!m_LoadFutures.contains(handle));
 
-                m_LoadFutures[handle] = std::async(std::launch::async, [this, handle, asset, metadata]()
-                {
-                    EP_PROFILE_FN("AssetManager::LoadAsset::Lambda");
+                //m_LoadFutures[handle] = std::async(std::launch::async, [this, handle, asset, metadata]()
+                //{
+                //    EP_PROFILE_FN("AssetManager::LoadAsset::Lambda");
 
-                    // Load asset here
+                //    // Load asset here
 
 
-                    m_LoadedComplete.insert(handle);
-                });
+                //    m_LoadedComplete.insert(handle);
+                //});
             }
             else
             {
