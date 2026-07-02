@@ -18,6 +18,7 @@ namespace Eppo
 
 	auto ScriptEngine::Init(const std::wstring& runtimeConfigPath) -> bool
 	{
+		// Get runtime config
 		char_t hostFxrPath[MAX_PATH];
 		size_t bufferSize = sizeof(hostFxrPath) / sizeof(char_t);
 
@@ -27,6 +28,7 @@ namespace Eppo
 			return false;
 		}
 
+		// Load hostfxr function pointers
 		m_HostFxrLib = LOAD_LIB(hostFxrPath);
 		EP_ASSERT(m_HostFxrLib);
 
@@ -41,6 +43,10 @@ namespace Eppo
 			return false;
 		}
 
+		// Load assembly
+		// Lets make a native and managed seperate project
+		LoadAssembly(FS::GetRootDirectory())
+
 		return true;
 	}
 
@@ -52,7 +58,10 @@ namespace Eppo
 
 	auto ScriptEngine::LoadAssembly(const std::wstring& path) -> void*
 	{
-		
+		m_AppAssemblyPath = path;
+		const std::wstring type = L"EppoScriptCore.ScriptGlue";
+
+		m_BootstrapFn = (BootstrapFn)GetManagedFnPointer(m_AppAssemblyPath, type, L"Bootstrap");
 	}
 
 	auto ScriptEngine::GetManagedFnPointer(const std::wstring& assemblyPath, const std::wstring& typeName, const std::wstring& methodName) -> void*

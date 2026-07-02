@@ -6,6 +6,8 @@
 # Build / Cache
 /build
 /EppoEditor/Resources/Shaders/Cache
+/EppoScriptCore/bin
+/EppoScriptCore/obj
 
 # Log files
 latest.log
