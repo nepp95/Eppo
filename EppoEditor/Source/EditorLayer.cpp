@@ -239,6 +239,8 @@ namespace Eppo
 
 	auto EditorLayer::CloseProject() -> void
 	{
+		ScriptEngine::Shutdown();
+
 		SaveProject();
 
 		auto scene = CreateRef<Scene>();
@@ -258,12 +260,13 @@ namespace Eppo
 		const auto projectPath = FS::GetRootDirectory() / "Projects" / name;
 		FS::CreateDirectory(projectPath);
 
+	    // Create asset directories
+	    FS::CreateDirectory(projectPath / "Assets" / "Meshes");
+	    FS::CreateDirectory(projectPath / "Assets" / "Scenes");
+	    FS::CreateDirectory(projectPath / "Assets" / "Scripts");
+
 		// Copy new project template
 		FS::Copy("Resources/Templates/NewProject", projectPath);
-
-		// Create directories
-		FS::CreateDirectory(projectPath / "Assets" / "Meshes");
-		FS::CreateDirectory(projectPath / "Assets" / "Scenes");
 
 		// Replace tokens
 		constexpr auto ReplaceToken = [](std::string& input, const char* token, const std::string& value) -> void
@@ -281,6 +284,14 @@ namespace Eppo
 			ReplaceToken(inputStr, "$PROJECT_NAME$", name);
 			FS::WriteText(projectPath / "project.epproj", inputStr, true);
 			FS::Move(projectPath / "project.epproj", projectPath / std::filesystem::path(name + ".epproj"));
+		}
+
+		// Replace tokens in Scripts.csproj
+		{
+			auto csprojStr = FS::ReadText(projectPath / "Scripts" / "Scripts.csproj");
+			ReplaceToken(csprojStr, "$PROJECT_NAME$", name);
+			ReplaceToken(csprojStr, "$APP_DIR$", FS::GetRootDirectory().string());
+			FS::WriteText(projectPath / "Scripts" / "Scripts.csproj", csprojStr, true);
 		}
 
 		OpenProject(projectPath / std::filesystem::path(name + ".epproj"));
@@ -316,6 +327,14 @@ namespace Eppo
 				OpenScene(projSpec.StartScene);
 			else
 				NewScene();
+
+			const auto runtimeConfigPath = FS::GetRootDirectory() / "runtimeconfig.json";
+			if (ScriptEngine::Init(runtimeConfigPath))
+			{
+				const auto userAssemblyPath = FS::GetRootDirectory() / (projSpec.Name + ".dll");
+				if (FS::Exists(userAssemblyPath))
+					ScriptEngine::LoadUserAssembly(userAssemblyPath);
+			}
 		}
 
 		return true;

@@ -264,18 +264,25 @@ namespace Eppo
 		device->resetTimerQuery(m_TimerQueries.at(frameIndex));
 	}
 
-	auto ImGuiRenderer::GetGPUTime(uint32_t frameIndex) const -> float
+	auto ImGuiRenderer::GetOwnGPUTime(uint32_t frameIndex) const -> float
 	{
 		EP_ASSERT(frameIndex < m_LastQueryTimes.size());
+		return m_LastQueryTimes.at(frameIndex);
+	}
 
-		float totalTime = m_LastQueryTimes.at(frameIndex);
+	auto ImGuiRenderer::GetGPUTime(uint32_t frameIndex) const -> float
+	{
+		float totalTime = GetOwnGPUTime(frameIndex);
 
 		const auto& platformIO = ImGui::GetPlatformIO();
 		for (ImGuiViewport* viewport : platformIO.Viewports)
 		{
+			if (viewport == ImGui::GetMainViewport())
+				continue;
+
 			ImGuiViewportData* vd = static_cast<ImGuiViewportData*>(viewport->RendererUserData);
 			if (vd && vd->Renderer)
-				totalTime += vd->Renderer->GetGPUTime(frameIndex);
+				totalTime += vd->Renderer->GetOwnGPUTime(frameIndex);
 		}
 
 		return totalTime;
@@ -340,7 +347,7 @@ namespace Eppo
 	{
 		EP_PROFILE_FN("ImGuiRenderer::GetOrCreatePipeline")
 
-		uint32_t framebufferIndex = swapchain->GetCurrentBackBufferIndex();
+		const uint32_t framebufferIndex = swapchain->GetCurrentBackBufferIndex();
 		auto& pipelineCache = m_PipelineCache[swapchain.get()];
 
 		nvrhi::FramebufferHandle targetFramebuffer = swapchain->GetCurrentSwapchainImage().Framebuffer->GetFramebuffer();

@@ -1,33 +1,36 @@
 #pragma once
 
+#include <EppoScriptCore.Native/Assembly.h>
+#include <EppoScriptCore.Native/ScriptClass.h>
+
 namespace Eppo
 {
-	class ScriptEngine
-	{
-	public:
-		auto Init(const std::wstring& runtimeConfigPath) -> bool;
-		auto Shutdown() -> void;
+    class ScriptEngine
+    {
+    public:
+        ScriptEngine(const ScriptEngine&) = delete;
+        ScriptEngine& operator=(const ScriptEngine&) = delete;
 
-		auto LoadAssembly(const std::wstring& path) -> void*;
+        static auto Init(const std::filesystem::path& runtimeConfigPath) -> bool;
+        static auto Shutdown() -> void;
 
-	private:
-		auto GetManagedFnPointer(const std::wstring& assemblyPath, const std::wstring& typeName, const std::wstring& methodName) -> void*;
+        static auto LoadUserAssembly(const std::filesystem::path& path) -> void;
+        [[nodiscard]] static auto IsRuntimeLoaded() -> bool;
 
-	private:
-		void* m_HostFxrLib = nullptr;
-		void* m_HostContext = nullptr;
+        [[nodiscard]] static auto GetClasses() -> const std::vector<EppoScriptCore::ScriptClass>&;
+        [[nodiscard]] static auto FindClassIndex(const std::string& fullName) -> int32_t;
 
-		std::wstring m_AppAssemblyPath;
+        ~ScriptEngine();
 
-		using BootstrapFn = void(*)();
-		using GetCountFn = int(*)();
-		using GetNameFn = char* (*)(int);
-		using FreeStringFn = void(*)(char*);
-		using InvokeFn = void(*)(const char*);
-		BootstrapFn m_BootstrapFn = nullptr;
-		GetCountFn m_GetCountFn = nullptr;
-		GetNameFn m_GetNameFn = nullptr;
-		FreeStringFn m_FreeStringFn = nullptr;
-		InvokeFn m_InvokeFn = nullptr;
-	};
+    private:
+        ScriptEngine() = default;
+
+        static auto LogCallback(uint8_t level, const char* message) -> void;
+        static auto InputIsKeyDownCallback(uint32_t keyCode) -> bool;
+        static auto ErrorCallback(const std::string& message) -> void;
+
+        std::unique_ptr<EppoScriptCore::Assembly> m_CoreAssembly;
+
+        static std::unique_ptr<ScriptEngine> s_Instance;
+    };
 }

@@ -161,7 +161,7 @@ namespace Eppo
 		const uint64_t requiredSize = instanceTransforms.size() * sizeof(glm::mat4);
 
 		if (!m_InstanceTransformsSB)
-			m_InstanceTransformsSB = CreateRef<StorageBuffer>(sizeof(glm::mat4), requiredSize, "StorageBuffer Instance Transforms");
+			m_InstanceTransformsSB = CreateRef<StorageBuffer>(static_cast<uint32_t>(sizeof(glm::mat4)), requiredSize, "StorageBuffer Instance Transforms");
 
 		m_InstanceTransformsSB->SetData(instanceTransforms.data(), requiredSize);
 

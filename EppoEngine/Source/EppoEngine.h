@@ -30,6 +30,8 @@
 #include "Scene/Scene.h"
 #include "Scene/SceneSerializer.h"
 
+#include "Scripting/ScriptEngine.h"
+
 #include "Utility/Filesystem.h"
 #include "Utility/Json.h"
 #include "Utility/Random.h"

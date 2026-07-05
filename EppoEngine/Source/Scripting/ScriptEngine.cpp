@@ -1,83 +1,97 @@
 #include "pch.h"
 #include "Scripting/ScriptEngine.h"
 
-#include "Scripting/Platform.h"
-
-#include <coreclr_delegates.h>
-#include <nethost.h>
-#include <hostfxr.h>
+#include "Core/Input.h"
 
 namespace Eppo
 {
-	namespace
-	{
-		hostfxr_initialize_for_runtime_config_fn s_InitFn;
-		hostfxr_get_runtime_delegate_fn s_GetDelegateFn;
-		hostfxr_close_fn s_CloseFn;
-	}
+    std::unique_ptr<ScriptEngine> ScriptEngine::s_Instance = nullptr;
 
-	auto ScriptEngine::Init(const std::wstring& runtimeConfigPath) -> bool
-	{
-		// Get runtime config
-		char_t hostFxrPath[MAX_PATH];
-		size_t bufferSize = sizeof(hostFxrPath) / sizeof(char_t);
+    ScriptEngine::~ScriptEngine()
+    {
+        m_CoreAssembly.reset();
+    }
 
-		if (get_hostfxr_path(hostFxrPath, &bufferSize, nullptr) != 0)
-		{
-			Log::Error("Could not locate hostfxr!");
-			return false;
-		}
+    auto ScriptEngine::Init(const std::filesystem::path& runtimeConfigPath) -> bool
+    {
+        if (s_Instance)
+            return true;
 
-		// Load hostfxr function pointers
-		m_HostFxrLib = LOAD_LIB(hostFxrPath);
-		EP_ASSERT(m_HostFxrLib);
+        s_Instance = std::unique_ptr<ScriptEngine>(new ScriptEngine());
 
-		s_InitFn = (hostfxr_initialize_for_runtime_config_fn)GET_SYM(m_HostFxrLib, "hostfxr_initialize_for_runtime_config");
-		s_GetDelegateFn = (hostfxr_get_runtime_delegate_fn)GET_SYM(m_HostFxrLib, "hostfxr_get_runtime_delegate");
-		s_CloseFn = (hostfxr_close_fn)GET_SYM(m_HostFxrLib, "hostfxr_close");
+        EppoScriptCore::NativeCallbacks callbacks;
+        callbacks.Log = LogCallback;
+        callbacks.InputIsKeyDown = InputIsKeyDownCallback;
 
-		int result = s_InitFn(runtimeConfigPath.c_str(), nullptr, &m_HostContext);
-		if (result != 0 || m_HostContext == nullptr)
-		{
-			Log::Error("hostfxr_initialize_for_runtime_config failed: {}", result);
-			return false;
-		}
+        s_Instance->m_CoreAssembly = std::make_unique<EppoScriptCore::Assembly>(
+            ErrorCallback,
+            runtimeConfigPath.wstring(),
+            callbacks
+        );
 
-		// Load assembly
-		// Lets make a native and managed seperate project
-		LoadAssembly(FS::GetRootDirectory())
+        return s_Instance->IsRuntimeLoaded();
+    }
 
-		return true;
-	}
+    auto ScriptEngine::Shutdown() -> void
+    {
+        if (!s_Instance)
+            return;
 
-	auto ScriptEngine::Shutdown() -> void
-	{
-		if (m_HostContext)
-			s_CloseFn(m_HostContext);
-	}
+        s_Instance->m_CoreAssembly.reset();
+        s_Instance.reset();
+    }
 
-	auto ScriptEngine::LoadAssembly(const std::wstring& path) -> void*
-	{
-		m_AppAssemblyPath = path;
-		const std::wstring type = L"EppoScriptCore.ScriptGlue";
+    auto ScriptEngine::LoadUserAssembly(const std::filesystem::path& path) -> void
+    {
+        if (!s_Instance || !s_Instance->m_CoreAssembly)
+            return;
 
-		m_BootstrapFn = (BootstrapFn)GetManagedFnPointer(m_AppAssemblyPath, type, L"Bootstrap");
-	}
+        s_Instance->m_CoreAssembly->LoadUserAssembly(path.wstring());
+    }
 
-	auto ScriptEngine::GetManagedFnPointer(const std::wstring& assemblyPath, const std::wstring& typeName, const std::wstring& methodName) -> void*
-	{
-		load_assembly_and_get_function_pointer_fn loadFn = nullptr;
-		s_GetDelegateFn(m_HostContext, hdt_load_assembly_and_get_function_pointer, (void**)&loadFn);
+    auto ScriptEngine::GetClasses() -> const std::vector<EppoScriptCore::ScriptClass>&
+    {
+        static const std::vector<EppoScriptCore::ScriptClass> empty;
 
-		void* methodPtr = nullptr;
-		int result = loadFn(assemblyPath.c_str(), typeName.c_str(), methodName.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, &methodPtr);
+        if (!s_Instance || !s_Instance->m_CoreAssembly)
+            return empty;
 
-		if (result != 0)
-		{
-			Log::Error("load_assembly_and_get_function_pointer failed: {}", result);
-			return nullptr;
-		}
+        return s_Instance->m_CoreAssembly->GetClasses();
+    }
 
-		return methodPtr;
-	}
+    auto ScriptEngine::FindClassIndex(const std::string& fullName) -> int32_t
+    {
+        if (!s_Instance || !s_Instance->m_CoreAssembly)
+            return -1;
+
+        return s_Instance->m_CoreAssembly->FindClassIndex(fullName);
+    }
+
+    auto ScriptEngine::LogCallback(const uint8_t level, const char* message) -> void
+    {
+        switch (level)
+        {
+            case 0: Log::Trace("{}", message); break;
+            case 1: Log::Info("{}", message); break;
+            case 2: Log::Warn("{}", message); break;
+            case 3: Log::Error("{}", message); break;
+            default: Log::Error("{}", message); break;
+        }
+    }
+
+    auto ScriptEngine::InputIsKeyDownCallback(const uint32_t keyCode) -> bool
+    {
+        return Input::IsKeyPressed(static_cast<KeyCode>(keyCode));
+    }
+
+    auto ScriptEngine::ErrorCallback(const std::string& message) -> void
+    {
+        Log::Error("{}", message);
+    }
+
+    auto ScriptEngine::IsRuntimeLoaded() -> bool
+    {
+        return s_Instance && s_Instance->m_CoreAssembly != nullptr;
+    }
+
 }
