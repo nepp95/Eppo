@@ -22,6 +22,8 @@ namespace Eppo
 
 		auto SetViewportSize(uint32_t width, uint32_t height) -> void;
 
+		auto OnRuntimeStart() -> void;
+		auto OnRuntimeStop() -> void;
 		auto OnUpdateRuntime(float timestep) -> void;
 
 		auto OnRenderEditor(const Ref<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void;

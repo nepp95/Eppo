@@ -62,4 +62,18 @@ namespace Eppo
 			: MeshHandle(handle)
 		{}
 	};
+
+	// Attaches a user script class to an entity. Kept intentionally small: it
+	// only names the class. The per-instance field values live in a side table
+	// owned by ScriptEngine (keyed by entity UUID), so this component stays
+	// cheap to store and copy in the registry.
+	struct ScriptComponent
+	{
+		std::string ClassName;
+
+		ScriptComponent() = default;
+		ScriptComponent(std::string className)
+			: ClassName(std::move(className))
+		{}
+	};
 }

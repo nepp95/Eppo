@@ -3,7 +3,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>$PROJECT_NAME$</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EppoScriptCore.Managed">

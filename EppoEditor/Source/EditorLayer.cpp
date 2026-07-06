@@ -34,6 +34,7 @@ namespace Eppo
 
 	auto EditorLayer::OnDetach() -> void
 	{
+		ScriptEngine::Shutdown();
 		Project::SetActive(nullptr);
 	}
 
@@ -225,6 +226,7 @@ namespace Eppo
 		m_SceneState = SceneState::Play;
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_PanelManager->SetSceneContext(m_ActiveScene);
+		m_ActiveScene->OnRuntimeStart();
 	}
 
 	auto EditorLayer::OnSceneStop() -> void
@@ -232,6 +234,7 @@ namespace Eppo
 		if (!m_ActiveScene)
 			return;
 
+		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
 		m_ActiveScene = m_EditorScene;
 		m_PanelManager->SetSceneContext(m_ActiveScene);
@@ -239,7 +242,10 @@ namespace Eppo
 
 	auto EditorLayer::CloseProject() -> void
 	{
-		ScriptEngine::Shutdown();
+		// Unload the per-project user assembly (collectible), but keep the
+		// scripting runtime + core assembly alive for the next project.
+		if (ScriptEngine::IsInitialized())
+			ScriptEngine::Get().UnloadUserAssembly();
 
 		SaveProject();
 
@@ -286,12 +292,13 @@ namespace Eppo
 			FS::Move(projectPath / "project.epproj", projectPath / std::filesystem::path(name + ".epproj"));
 		}
 
-		// Replace tokens in Scripts.csproj
+		// Replace tokens in the scripts project and rename it after the project.
 		{
-			auto csprojStr = FS::ReadText(projectPath / "Scripts" / "Scripts.csproj");
-			ReplaceToken(csprojStr, "$PROJECT_NAME$", name);
+			const auto templateCsproj = projectPath / "Scripts" / "Scripts.csproj";
+			auto csprojStr = FS::ReadText(templateCsproj);
 			ReplaceToken(csprojStr, "$APP_DIR$", FS::GetRootDirectory().string());
-			FS::WriteText(projectPath / "Scripts" / "Scripts.csproj", csprojStr, true);
+			FS::WriteText(templateCsproj, csprojStr, true);
+			FS::Move(templateCsproj, projectPath / "Scripts" / std::filesystem::path(name + ".csproj"));
 		}
 
 		OpenProject(projectPath / std::filesystem::path(name + ".epproj"));
@@ -323,18 +330,40 @@ namespace Eppo
 		if (Project::Open(path))
 		{
 			const auto& projSpec = Project::GetActive()->GetSpecification();
-			if (projSpec.StartScene)
-				OpenScene(projSpec.StartScene);
-			else
-				NewScene();
+
+			// Build and load the scripting assemblies before opening the scene:
+			// scene deserialization populates ScriptEngine's field storage, so
+			// the engine must be initialized and the user classes known first.
+			const auto scriptsProjectPath = Project::GetScriptsDirectory() / (projSpec.Name + ".csproj");
+			if (FS::Exists(scriptsProjectPath))
+			{
+				const std::string command = std::format(
+					"dotnet build \"{}\" -c Debug -o \"{}\"",
+					scriptsProjectPath.string(),
+					FS::GetRootDirectory().string()
+				);
+				std::system(command.c_str());
+			}
 
 			const auto runtimeConfigPath = FS::GetRootDirectory() / "runtimeconfig.json";
 			if (ScriptEngine::Init(runtimeConfigPath))
 			{
 				const auto userAssemblyPath = FS::GetRootDirectory() / (projSpec.Name + ".dll");
 				if (FS::Exists(userAssemblyPath))
-					ScriptEngine::LoadUserAssembly(userAssemblyPath);
+					ScriptEngine::Get().LoadUserAssembly(userAssemblyPath);
+				else
+					Log::Warn("No user script assembly found at '{}'; scripts will be unavailable.", userAssemblyPath);
 			}
+			else
+			{
+				Log::Error("Failed to initialize the script runtime for project '{}'.", projSpec.Name);
+			}
+
+			// Now that scripting is ready, open the start scene.
+			if (projSpec.StartScene)
+				OpenScene(projSpec.StartScene);
+			else
+				NewScene();
 		}
 
 		return true;

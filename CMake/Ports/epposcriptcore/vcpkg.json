@@ -1,7 +1,6 @@
 {
   "name": "epposcriptcore",
-  "version-date": "2026-07-03",
-  "port-version": 1,
+  "version-date": "2026-07-06",
   "description": "EppoScriptCore - Managed scripting glue library providing .NET runtime hosting for the EppoEngine",
   "homepage": "https://gitlab.com/nepp95/epposcriptcore",
   "license": "MIT",

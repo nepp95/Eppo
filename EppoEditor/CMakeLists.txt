@@ -13,6 +13,8 @@ target_link_libraries(EppoEditor PRIVATE EppoEngine)
 
 if (MSVC)
     target_compile_options(EppoEditor PRIVATE "/W3")
+    # LNK4099: spirv-cross-core ships without a matching PDB; harmless.
+    target_link_options(EppoEditor PRIVATE "/ignore:4099")
 endif ()
 
 # Copy runtime DLLs

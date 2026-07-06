@@ -4,6 +4,7 @@
 #include "Renderer/SceneRenderer.h"
 #include "Scene/Components.h"
 #include "Scene/Entity.h"
+#include "Scripting/ScriptEngine.h"
 
 namespace Eppo
 {
@@ -13,9 +14,52 @@ namespace Eppo
 
 	}
 
+	auto Scene::OnRuntimeStart() -> void
+	{
+		EP_PROFILE_FN("Scene::OnRuntimeStart");
+
+		if (!ScriptEngine::IsInitialized())
+			return;
+
+		auto& scriptEngine = ScriptEngine::Get();
+		const auto view = m_Registry.view<ScriptComponent>();
+		for (const auto e : view)
+		{
+			Entity entity(e, this);
+			scriptEngine.OnCreateEntity(entity);
+		}
+	}
+
+	auto Scene::OnRuntimeStop() -> void
+	{
+		EP_PROFILE_FN("Scene::OnRuntimeStop");
+
+		if (!ScriptEngine::IsInitialized())
+			return;
+
+		auto& scriptEngine = ScriptEngine::Get();
+		const auto view = m_Registry.view<ScriptComponent>();
+		for (const auto e : view)
+		{
+			Entity entity(e, this);
+			scriptEngine.OnDestroyEntity(entity);
+		}
+	}
+
 	auto Scene::OnUpdateRuntime(float timestep) -> void
 	{
 		EP_PROFILE_FN("Scene::OnUpdateRuntime");
+
+		if (!ScriptEngine::IsInitialized())
+			return;
+
+		auto& scriptEngine = ScriptEngine::Get();
+		const auto view = m_Registry.view<ScriptComponent>();
+		for (const auto e : view)
+		{
+			Entity entity(e, this);
+			scriptEngine.OnUpdateEntity(entity, timestep);
+		}
 	}
 
 	auto Scene::OnRenderEditor(const Ref<SceneRenderer>& sceneRenderer, const ScopedPtr<EditorCamera>& camera) -> void
@@ -61,12 +105,21 @@ namespace Eppo
 
 		TryCopyComponent<TransformComponent>(entity, newEntity);
 		TryCopyComponent<MeshComponent>(entity, newEntity);
+		TryCopyComponent<ScriptComponent>(entity, newEntity);
+
+		// Script field values live in ScriptEngine's side table, keyed by UUID,
+		// so they must be copied across to the new entity explicitly.
+		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::IsInitialized())
+			ScriptEngine::Get().CopyFieldMap(entity.GetUUID(), newEntity.GetUUID());
 
 		return newEntity;
 	}
 
 	auto Scene::DestroyEntity(Entity entity) -> void
 	{
+		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::IsInitialized())
+			ScriptEngine::Get().RemoveFieldMap(entity.GetUUID());
+
 		if (m_EntityMap.contains(entity.GetUUID()))
 			m_EntityMap.erase(entity.GetUUID());
 
@@ -118,6 +171,7 @@ namespace Eppo
 
 		CopyComponent<TransformComponent>(srcRegistry, dstRegistry, entityMap);
 		CopyComponent<MeshComponent>(srcRegistry, dstRegistry, entityMap);
+		CopyComponent<ScriptComponent>(srcRegistry, dstRegistry, entityMap);
 
 		return newScene;
 	}

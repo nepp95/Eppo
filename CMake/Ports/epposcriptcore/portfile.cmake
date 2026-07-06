@@ -2,9 +2,9 @@ vcpkg_from_gitlab(
     OUT_SOURCE_PATH SOURCE_PATH
     GITLAB_URL https://gitlab.com
     REPO nepp95/epposcriptcore
-    REF e90517a8b5409dda197ff6e5115deb17c63aed57
-    SHA512 ab567f4626da1266eb7c74e7ff446dbbe8c1ef82bacc0f0b839af92df244116ab1a6b1ba64f444e275ab0f58c52f913c700fa6dcdb747782351344c46b1799c2
-    HEAD_REF main
+    REF 59b3ce351fc354fd1a9cd5d1015ca873a176dce5
+    SHA512 793828a6ed04cbe24a67c07b2b6615cbfbcd4aa5fa789a7f73ede50b16890fcd0d7ed6683cdb7ecfdb33fbde41f59b961ca91330e45c3d9a8991d4d4410a9eac
+    HEAD_REF master
     PATCHES
         install-targets.patch
 )

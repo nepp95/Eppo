@@ -15,6 +15,41 @@ namespace Eppo
 
 			return fullType.substr(pos + 1, stringSize - 9);
 		}
+
+		// Renders an editor widget for a single script field, mutating the value
+		// buffer in place. ImGui reads/writes the typed value directly.
+		static auto DrawScriptField(const EppoScriptCore::ScriptField& field, ScriptFieldValue& value) -> void
+		{
+			using FT = EppoScriptCore::ScriptFieldType;
+
+			const std::string label = "##" + field.Name;
+			void* data = value.Buffer.data();
+
+			ImGui::TableNextColumn();
+			ImGui::Text("%s", field.Name.c_str());
+			ImGui::TableNextColumn();
+			ImGui::SetNextItemWidth(-FLT_MIN);
+
+			switch (field.Type)
+			{
+				case FT::Float:   ImGui::DragScalar(label.c_str(), ImGuiDataType_Float, data, 0.1f); break;
+				case FT::Double:  ImGui::InputScalar(label.c_str(), ImGuiDataType_Double, data); break;
+				case FT::Bool:    ImGui::Checkbox(label.c_str(), reinterpret_cast<bool*>(data)); break;
+				case FT::Char:    ImGui::InputScalar(label.c_str(), ImGuiDataType_U16, data); break;
+				case FT::Int16:   ImGui::InputScalar(label.c_str(), ImGuiDataType_S16, data); break;
+				case FT::Int32:   ImGui::DragScalar(label.c_str(), ImGuiDataType_S32, data); break;
+				case FT::Int64:   ImGui::InputScalar(label.c_str(), ImGuiDataType_S64, data); break;
+				case FT::Byte:    ImGui::InputScalar(label.c_str(), ImGuiDataType_U8, data); break;
+				case FT::UInt16:  ImGui::InputScalar(label.c_str(), ImGuiDataType_U16, data); break;
+				case FT::UInt32:  ImGui::InputScalar(label.c_str(), ImGuiDataType_U32, data); break;
+				case FT::UInt64:  ImGui::InputScalar(label.c_str(), ImGuiDataType_U64, data); break;
+				case FT::Vector2: ImGui::DragScalarN(label.c_str(), ImGuiDataType_Float, data, 2, 0.1f); break;
+				case FT::Vector3: ImGui::DragScalarN(label.c_str(), ImGuiDataType_Float, data, 3, 0.1f); break;
+				case FT::Vector4: ImGui::DragScalarN(label.c_str(), ImGuiDataType_Float, data, 4, 0.1f); break;
+				case FT::Entity:  ImGui::InputScalar(label.c_str(), ImGuiDataType_U64, data); break;
+				default:          ImGui::TextDisabled("(unsupported type)"); break;
+			}
+		}
 	}
 
 	auto PropertyPanel::RenderGui() -> void
@@ -38,6 +73,7 @@ namespace Eppo
 		if (ImGui::BeginPopup("AddComponent"))
 		{
 			DrawAddComponentEntry<MeshComponent>("Mesh");
+			DrawAddComponentEntry<ScriptComponent>("Script");
 
 			ImGui::EndPopup();
 		}
@@ -179,6 +215,73 @@ namespace Eppo
 
 					ImGui::EndPopup();
 				}
+			}
+		});
+
+		DrawComponent<ScriptComponent>(entity, [entity](auto& component)
+		{
+			if (!ScriptEngine::IsInitialized())
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Script runtime not initialized");
+				return;
+			}
+
+			auto& scriptEngine = ScriptEngine::Get();
+			const auto& classes = scriptEngine.GetClasses();
+			const bool valid = scriptEngine.IsValidScriptClass(component.ClassName);
+
+			const char* preview = component.ClassName.empty() ? "(none)" : component.ClassName.c_str();
+			if (ImGui::BeginCombo("Class", preview))
+			{
+				for (const auto& cls : classes)
+				{
+					const bool selected = cls.GetFullName() == component.ClassName;
+					if (ImGui::Selectable(cls.GetFullName().c_str(), selected))
+						component.ClassName = cls.GetFullName();
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			if (!component.ClassName.empty() && !valid)
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Unknown script class");
+				return;
+			}
+
+			const auto classIndex = scriptEngine.FindClassIndex(component.ClassName);
+			if (classIndex < 0)
+				return;
+
+			const auto& fields = classes[classIndex].GetFields();
+			if (fields.empty())
+				return;
+
+			// The side table owns the editor-time field values (keyed by UUID).
+			auto& fieldMap = scriptEngine.GetFieldMap(entity.GetUUID());
+
+			if (ImGui::BeginTable("##ScriptFields", 2))
+			{
+				for (const auto& field : fields)
+				{
+					if (field.Type == EppoScriptCore::ScriptFieldType::None)
+						continue;
+
+					auto& value = fieldMap[field.Name];
+					if (value.Type != field.Type)
+					{
+						value = ScriptFieldValue{};
+						value.Type = field.Type;
+					}
+
+					ImGui::TableNextRow();
+					ImGui::PushID(field.Name.c_str());
+					Utils::DrawScriptField(field, value);
+					ImGui::PopID();
+				}
+
+				ImGui::EndTable();
 			}
 		});
 	}
