@@ -10,3 +10,6 @@
 # Log files
 latest.log
 previous.log
+
+# Tooling
+CLAUDE.md
